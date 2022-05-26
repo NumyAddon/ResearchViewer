@@ -420,10 +420,7 @@ local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
 		text = "Research Viewer",
 		icon = "interface/icons/inv_misc_book_11.blp",
 		OnClick = function()
-			OrderHall_LoadUI()
-			ResearchViewer.selectedTreeInfo = ResearchViewer.db and ResearchViewer.db.lastSelected or ResearchViewer.talentTrees.Shadowlands[2]
-			ResearchViewer:initDropDown()
-			ResearchViewer:OpenSelectedResearch()
+			ResearchViewer:openResearchView()
 		end,
 		OnTooltipShow = function(tooltip)
 			tooltip:AddLine("Research Viewer")
@@ -479,6 +476,13 @@ function ResearchViewer:makeDropDownButton()
 	end
 
 	return mainButton, dropDown
+end
+
+function ResearchViewer:openResearchView()
+	OrderHall_LoadUI()
+	ResearchViewer.selectedTreeInfo = ResearchViewer.db and ResearchViewer.db.lastSelected or ResearchViewer.talentTrees.Shadowlands[2]
+	ResearchViewer:initDropDown()
+	ResearchViewer:OpenSelectedResearch()
 end
 
 function ResearchViewer:OpenSelectedResearch()
@@ -566,4 +570,10 @@ function ResearchViewer:initDropDown()
 
 	self.menuList = self:buildMenu(setValue)
 	EasyMenu(self.menuList, self.dropDown, self.dropDown, 0, 0)
+end
+
+SLASH_RESEARCH_VIEWER1 = "/rv"
+SLASH_RESEARCH_VIEWER2 = "/researchviewer"
+SlashCmdList["RESEARCH_VIEWER"] = function()
+	ResearchViewer:openResearchView()
 end
