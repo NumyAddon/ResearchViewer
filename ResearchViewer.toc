@@ -1,0 +1,9 @@
+## Interface: 90200
+## Title: Reserach Viewer
+## Notes: Minimap Button to view your various Research UIs
+## Author: Numy
+## Version: 1.0
+## SavedVariables: ResearchViewerDB
+
+libs\load_libs.xml
+ResearchViewer.lua
