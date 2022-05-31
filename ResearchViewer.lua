@@ -1,7 +1,6 @@
-local name, ns = ...
+local name, _ = ...
 
-ResearchViewer = {};
-local ResearchViewer = ResearchViewer
+local ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
 
 local playerClass, _ = UnitClassBase("player")
@@ -403,15 +402,13 @@ ResearchViewer.neverImplemented = {
 }
 
 ResearchViewer.selectedTreeInfo = nil
-ResearchViewer.dropDown, ResearchViewer.initDropDown = nil, nil
+ResearchViewer.dropDown, ResearchViewer.InitDropDown = nil, nil
 
 local original = C_Garrison.GetCurrentGarrTalentTreeID
 C_Garrison.GetCurrentGarrTalentTreeID = function()
 	if ResearchViewer.selectedTreeInfo then return ResearchViewer.selectedTreeInfo.id end
 	return original()
 end
-
-local hooked = false
 
 local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
 	"ResearchViewer",
@@ -420,7 +417,7 @@ local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
 		text = "Research Viewer",
 		icon = "interface/icons/inv_misc_book_11.blp",
 		OnClick = function()
-			ResearchViewer:openResearchView()
+			ResearchViewer:OpenResearchView()
 		end,
 		OnTooltipShow = function(tooltip)
 			tooltip:AddLine("Research Viewer")
@@ -432,7 +429,7 @@ local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
 LibDBIcon:Register("ResearchViewer", ResearchViewerLDB, { hide = false })
 
 local frame = CreateFrame("FRAME")
-local function OnEvent(self, event, ...)
+local function OnEvent(_, event, ...)
 	if event == "ADDON_LOADED" then
 		local addonName = ...
 		if addonName == name then
@@ -440,15 +437,46 @@ local function OnEvent(self, event, ...)
 			ResearchViewer.db = ResearchViewerDB
 		end
 		if addonName == "Blizzard_OrderHallUI" then
-			ResearchViewer:initDropDown()
+			ResearchViewer:InitDropDown()
 		end
 	end
 end
 frame:HookScript('OnEvent', OnEvent)
 frame:RegisterEvent('ADDON_LOADED')
 
+EventRegistry:RegisterCallback('GarrisonTalentButtonMixin.TalentTooltipShown',
+	function(self, gameTooltip, talentInfo, talentTreeId)
+		local talentId = talentInfo.id
 
-function ResearchViewer:makeDropDownButton()
+		if(talentId) then
+			local text = "|cFFEE6161Order Advancement ID|r " .. talentId
+			if(not self:AlreadyAdded(text, gameTooltip)) then
+				gameTooltip:AddLine(text)
+			end
+			gameTooltip:Show()
+		end
+	end,
+	ResearchViewer -- sets first arg to this
+)
+
+
+function ResearchViewer:AlreadyAdded(textLine, tooltip)
+	if textLine == nil then
+		return false
+	end
+
+	for i = 1,15 do
+		local tooltipFrame = _G[tooltip:GetName() .. "TextLeft" .. i]
+		local textRight = _G[tooltip:GetName().."TextRight"..i]
+		local text, right
+		if tooltipFrame then text = tooltipFrame:GetText() end
+		if text and string.find(text, textLine, 1, true) then return true end
+		if textRight then right = textRight:GetText() end
+		if right and string.find(right, textLine, 1, true) then return true end
+	end
+end
+
+function ResearchViewer:MakeDropDownButton()
 	local mainButton = CreateFrame("BUTTON", nil, OrderHallTalentFrame, "UIPanelButtonTemplate")
 	local dropDown = CreateFrame("FRAME", nil, OrderHallTalentFrame, "UIDropDownMenuTemplate")
 
@@ -478,13 +506,14 @@ function ResearchViewer:makeDropDownButton()
 	return mainButton, dropDown
 end
 
-function ResearchViewer:openResearchView()
+function ResearchViewer:OpenResearchView()
 	OrderHall_LoadUI()
 	ResearchViewer.selectedTreeInfo = ResearchViewer.db and ResearchViewer.db.lastSelected or ResearchViewer.talentTrees.Shadowlands[2]
-	ResearchViewer:initDropDown()
+	ResearchViewer:InitDropDown()
 	ResearchViewer:OpenSelectedResearch()
 end
 
+local hooked = false
 function ResearchViewer:OpenSelectedResearch()
 	OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id)
 	self.db.lastSelected = self.selectedTreeInfo
@@ -498,7 +527,7 @@ function ResearchViewer:OpenSelectedResearch()
 	end
 end
 
-function ResearchViewer:buildMenu(setValueFunc)
+function ResearchViewer:BuildMenu(setValueFunc)
 	local menu = {}
 
 	for expansion, list in pairs(self.talentTrees) do
@@ -555,9 +584,9 @@ function ResearchViewer:buildMenu(setValueFunc)
 	return menu
 end
 
-function ResearchViewer:initDropDown()
+function ResearchViewer:InitDropDown()
 	if self.dropDownButton then return end
-	self.dropDownButton, self.dropDown = self:makeDropDownButton()
+	self.dropDownButton, self.dropDown = self:MakeDropDownButton()
 
 	local function setValue(_, newValue)
 		CloseDropDownMenus()
@@ -568,12 +597,12 @@ function ResearchViewer:initDropDown()
 		ResearchViewer:OpenSelectedResearch()
 	end
 
-	self.menuList = self:buildMenu(setValue)
+	self.menuList = self:BuildMenu(setValue)
 	EasyMenu(self.menuList, self.dropDown, self.dropDown, 0, 0)
 end
 
 SLASH_RESEARCH_VIEWER1 = "/rv"
 SLASH_RESEARCH_VIEWER2 = "/researchviewer"
 SlashCmdList["RESEARCH_VIEWER"] = function()
-	ResearchViewer:openResearchView()
+	ResearchViewer:OpenResearchView()
 end
