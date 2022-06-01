@@ -401,40 +401,82 @@ ResearchViewer.neverImplemented = {
 	},
 }
 
-ResearchViewer.selectedTreeInfo = nil
-ResearchViewer.dropDown, ResearchViewer.InitDropDown = nil, nil
+function ResearchViewer:OnInitialize()
+	ResearchViewerDB = ResearchViewerDB or {}
+	self.db = ResearchViewerDB
 
-local original = C_Garrison.GetCurrentGarrTalentTreeID
-C_Garrison.GetCurrentGarrTalentTreeID = function()
-	if ResearchViewer.selectedTreeInfo then return ResearchViewer.selectedTreeInfo.id end
-	return original()
+	if not self.db.ldbOptions then
+		self.db.ldbOptions = {
+			hide = false,
+		}
+	end
+
+	local original = C_Garrison.GetCurrentGarrTalentTreeID
+	C_Garrison.GetCurrentGarrTalentTreeID = function()
+		if ResearchViewer.selectedTreeInfo then return ResearchViewer.selectedTreeInfo.id end
+		return original()
+	end
+
+	local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
+		name,
+		{
+			type = "data source",
+			text = "Research Viewer",
+			icon = "interface/icons/inv_misc_book_11.blp",
+			OnClick = function()
+				if IsShiftKeyDown() then
+					LibDBIcon:Hide(name)
+					return
+				end
+				ResearchViewer:OpenResearchView()
+			end,
+			OnTooltipShow = function(tooltip)
+				tooltip:AddLine("Research Viewer")
+				tooltip:AddLine("Click to view various research trees from the field.")
+				tooltip:AddLine("Shift+Click to hide this button. ('/rv reset' to restore)")
+			end,
+		}
+	)
+
+	LibDBIcon:Register("ResearchViewer", ResearchViewerLDB, self.db.ldbOptions)
+
+	EventRegistry:RegisterCallback('GarrisonTalentButtonMixin.TalentTooltipShown',
+		function(self, tooltip, talentInfo, talentTreeId)
+			local talentId = talentInfo.id
+
+			if(talentId) then
+				local text = "|cFFEE6161Order Advancement ID|r " .. talentId
+				if(not self:AlreadyAdded(text, tooltip)) then
+					tooltip:AddLine(text)
+				end
+				tooltip:Show()
+			end
+		end,
+		self
+	)
+
+	SLASH_RESEARCH_VIEWER1 = "/rv"
+	SLASH_RESEARCH_VIEWER2 = "/researchviewer"
+	SlashCmdList["RESEARCH_VIEWER"] = function(message)
+		if message == "reset" then
+			wipe(ResearchViewer.db.ldbOptions)
+			ResearchViewer.db.ldbOptions.hide = false
+			ResearchViewer.db.lastSelected = nil
+
+			LibDBIcon:Hide(name)
+			LibDBIcon:Show(name)
+			return
+		end
+		ResearchViewer:OpenResearchView()
+	end
 end
-
-local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
-	"ResearchViewer",
-	{
-		type = "data source",
-		text = "Research Viewer",
-		icon = "interface/icons/inv_misc_book_11.blp",
-		OnClick = function()
-			ResearchViewer:OpenResearchView()
-		end,
-		OnTooltipShow = function(tooltip)
-			tooltip:AddLine("Research Viewer")
-			tooltip:AddLine("Click to view various research trees from the field.")
-		end,
-	}
-)
-
-LibDBIcon:Register("ResearchViewer", ResearchViewerLDB, { hide = false })
 
 local frame = CreateFrame("FRAME")
 local function OnEvent(_, event, ...)
 	if event == "ADDON_LOADED" then
 		local addonName = ...
 		if addonName == name then
-			ResearchViewerDB = ResearchViewerDB or {}
-			ResearchViewer.db = ResearchViewerDB
+			ResearchViewer:OnInitialize()
 		end
 		if addonName == "Blizzard_OrderHallUI" then
 			ResearchViewer:InitDropDown()
@@ -443,22 +485,6 @@ local function OnEvent(_, event, ...)
 end
 frame:HookScript('OnEvent', OnEvent)
 frame:RegisterEvent('ADDON_LOADED')
-
-EventRegistry:RegisterCallback('GarrisonTalentButtonMixin.TalentTooltipShown',
-	function(self, gameTooltip, talentInfo, talentTreeId)
-		local talentId = talentInfo.id
-
-		if(talentId) then
-			local text = "|cFFEE6161Order Advancement ID|r " .. talentId
-			if(not self:AlreadyAdded(text, gameTooltip)) then
-				gameTooltip:AddLine(text)
-			end
-			gameTooltip:Show()
-		end
-	end,
-	ResearchViewer -- sets first arg to this
-)
-
 
 function ResearchViewer:AlreadyAdded(textLine, tooltip)
 	if textLine == nil then
@@ -599,10 +625,4 @@ function ResearchViewer:InitDropDown()
 
 	self.menuList = self:BuildMenu(setValue)
 	EasyMenu(self.menuList, self.dropDown, self.dropDown, 0, 0)
-end
-
-SLASH_RESEARCH_VIEWER1 = "/rv"
-SLASH_RESEARCH_VIEWER2 = "/researchviewer"
-SlashCmdList["RESEARCH_VIEWER"] = function()
-	ResearchViewer:OpenResearchView()
 end
