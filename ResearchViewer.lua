@@ -21,383 +21,99 @@ local orderHalls = {
 
 ResearchViewer.talentTrees = {
 	Shadowlands = {
-		{
-			name = "The Box of Many Things",
-			id = 461,
-			type = 111,
+		{ type = 111, id = 461, name = "The Box of Many Things" },
+		{ type = 111, id = 474, name = "Cypher Research Console" },
+		{ type = 111, id = 476, name = "Pocopoc Customization" },
+		["Kyrian (hidden research trees)"] = {
+			{ type = 111, id = 308, name = "Transport Network" },
+			{ type = 111, id = 312, name = "Anima Conductor" },
+			{ type = 111, id = 316, name = "Command Table" },
+			{ type = 111, id = 320, name = "Path of Ascension" },
+			{ type = 111, id = 357, name = "Pelagos" },
+			{ type = 111, id = 360, name = "Kleia" },
+			{ type = 111, id = 365, name = "Mikanikos" },
+			{ type = 111, id = 345, name = "Channel Anima" },
+			{ type = 111, id = 393, name = "Bastion - Covenant Abilities" },
 		},
-		{
-			name = "Cypher Research Console",
-			id = 474,
-			type = 111,
+		["Night Fea (hidden research trees)"] = {
+			{ type = 111, id = 307, name = "Transport Network" },
+			{ type = 111, id = 311, name = "Anima Conductor" },
+			{ type = 111, id = 315, name = "Command Table" },
+			{ type = 111, id = 319, name = "The Queen's Conservatory" },
+			{ type = 111, id = 275, name = "Dreamweaver" },
+			{ type = 111, id = 276, name = "Niya" },
+			{ type = 111, id = 334, name = "Korayn" },
+			{ type = 111, id = 346, name = "Channel Anima" },
+			{ type = 111, id = 397, name = "Ardenweald - Covenant Abilities" },
 		},
-		{
-			name = "Pocopoc Customization",
-			id = 476,
-			type = 111,
+		["Necrolord  (hidden research trees)"] = {
+			{ type = 111, id = 310, name = "Transport Network" },
+			{ type = 111, id = 313, name = "Anima Conductor" },
+			{ type = 111, id = 318, name = "Command Table" },
+			{ type = 111, id = 321, name = "Abomination Factory" },
+			{ type = 111, id = 325, name = "Plague Deviser Marileth" },
+			{ type = 111, id = 330, name = "Emeni" },
+			{ type = 111, id = 349, name = "Bonesmith Heirmir" },
+			{ type = 111, id = 347, name = "Channel Anima" },
+			{ type = 111, id = 395, name = "Maldraxxus - Covenant Abilities" },
+		},
+		["Venthyr (hidden research trees)"] = {
+			{ type = 111, id = 309, name = "Transport Network" },
+			{ type = 111, id = 314, name = "Anima Conductor" },
+			{ type = 111, id = 317, name = "Command Table" },
+			{ type = 111, id = 324, name = "The Ember Court" },
+			{ type = 111, id = 368, name = "Nadjia the Mistblade" },
+			{ type = 111, id = 392, name = "Theotar the Mad Duke" },
+			{ type = 111, id = 304, name = "General Draven" },
+			{ type = 111, id = 348, name = "Channel Anima" },
+			{ type = 111, id = 396, name = "Revendreth - Covenant Abilities" },
 		},
 	},
 	BFA = {
-		{
-			name = "War Research - Horde",
-			id = 152,
-			type = 9,
-		},
-		{
-			name = "War Research - Aliance",
-			id = 153,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research",
-			id = 271,
-			type = 9,
-		},
+		{ type = 9, id = 152, name = "War Research - Horde" },
+		{ type = 9, id = 153, name = "War Research - Aliance" },
+		{ type = 9, id = 271, name = "MOTHER's Research" },
 	},
 	Legion = {
-		{
-			name = "Your class Order Hall",
-			id = orderHalls[playerClass],
-			type = 3,
-		},
-		{
-			name = "Chromie event",
-			id = 151,
-			type = 3,
-		},
-		{
-			name = "Death Knight Order Hall",
-			id = orderHalls.DEATHKNIGHT,
-			type = 3,
-		},
-		{
-			name = "Warrior Order Hall",
-			id = orderHalls.WARRIOR,
-			type = 3,
-		},
-		{
-			name = "Monk Order Hall",
-			id = orderHalls.MONK,
-			type = 3,
-		},
-		{
-			name = "Shaman Order Hall",
-			id = orderHalls.SHAMAN,
-			type = 3,
-		},
-		{
-			name = "Druid Order Hall",
-			id = orderHalls.DRUID,
-			type = 3,
-		},
-		{
-			name = "Warlock Order Hall",
-			id = orderHalls.WARLOCK,
-			type = 3,
-		},
-		{
-			name = "Hunter Order Hall",
-			id = orderHalls.HUNTER,
-			type = 3,
-		},
-		{
-			name = "Mage Order Hall",
-			id = orderHalls.MAGE,
-			type = 3,
-		},
-		{
-			name = "Paladin Order Hall",
-			id = orderHalls.PALADIN,
-			type = 3,
-		},
-		{
-			name = "Demon Hunter Order Hall",
-			id = orderHalls.DEMONHUNTER,
-			type = 3,
-		},
-		{
-			name = "Rogue Order Hall",
-			id = orderHalls.ROGUE,
-			type = 3,
-		},
-		{
-			name = "Priest Order Hall",
-			id = orderHalls.PRIEST,
-			type = 3,
-		},
+		{ type = 3, id = orderHalls[playerClass], name = "Your class Order Hall" },
+		{ type = 3, id = 151, name = "Chromie event" },
+		{ type = 3, id = orderHalls.DEATHKNIGHT, name = "Death Knight Order Hall" },
+		{ type = 3, id = orderHalls.WARRIOR, name = "Warrior Order Hall" },
+		{ type = 3, id = orderHalls.MONK, name = "Monk Order Hall" },
+		{ type = 3, id = orderHalls.SHAMAN, name = "Shaman Order Hall" },
+		{ type = 3, id = orderHalls.DRUID, name = "Druid Order Hall" },
+		{ type = 3, id = orderHalls.WARLOCK, name = "Warlock Order Hall" },
+		{ type = 3, id = orderHalls.HUNTER, name = "Hunter Order Hall" },
+		{ type = 3, id = orderHalls.MAGE, name = "Mage Order Hall" },
+		{ type = 3, id = orderHalls.PALADIN, name = "Paladin Order Hall" },
+		{ type = 3, id = orderHalls.DEMONHUNTER, name = "Demon Hunter Order Hall" },
+		{ type = 3, id = orderHalls.ROGUE, name = "Rogue Order Hall" },
+		{ type = 3, id = orderHalls.PRIEST, name = "Priest Order Hall" },
 	},
 }
 ResearchViewer.neverImplemented = {
 	Shadowlands = {
-		{
-			name = "Unnamed research (150)",
-			id = 150,
-			type = 111,
-		},
-		{
-			name = "Nadjia the Mistblade (272)",
-			id = 272,
-			type = 111,
-		},
-		{
-			name = "Dreamweaver (275)",
-			id = 275,
-			type = 111,
-		},
-		{
-			name = "Niya (276)",
-			id = 276,
-			type = 111,
-		},
-		{
-			name = "General Draven (304)",
-			id = 304,
-			type = 111,
-		},
-		{
-			name = "Transport Network (307)",
-			id = 307,
-			type = 111,
-		},
-		{
-			name = "Transport Network (308)",
-			id = 308,
-			type = 111,
-		},
-		{
-			name = "Transport Network (309)",
-			id = 309,
-			type = 111,
-		},
-		{
-			name = "Transport Network (310)",
-			id = 310,
-			type = 111,
-		},
-		{
-			name = "Anima Conductor (311)",
-			id = 311,
-			type = 111,
-		},
-		{
-			name = "Anima Conductor (312)",
-			id = 312,
-			type = 111,
-		},
-		{
-			name = "Anima Conductor (313)",
-			id = 313,
-			type = 111,
-		},
-		{
-			name = "Anima Conductor (314)",
-			id = 314,
-			type = 111,
-		},
-		{
-			name = "Command Table (315)",
-			id = 315,
-			type = 111,
-		},
-		{
-			name = "Command Table (316)",
-			id = 316,
-			type = 111,
-		},
-		{
-			name = "Command Table (317)",
-			id = 317,
-			type = 111,
-		},
-		{
-			name = "Command Table (318)",
-			id = 318,
-			type = 111,
-		},
-		{
-			name = "The Queen's Conservatory (319)",
-			id = 319,
-			type = 111,
-		},
-		{
-			name = "Path of Ascension (320)",
-			id = 320,
-			type = 111,
-		},
-		{
-			name = "Abomination Factory (321)",
-			id = 321,
-			type = 111,
-		},
-		{
-			name = "The Ember Court (324)",
-			id = 324,
-			type = 111,
-		},
-		{
-			name = "Plague Deviser Marileth (325)",
-			id = 325,
-			type = 111,
-		},
-		{
-			name = "Revendreth - Resevoir Upgrades (326)",
-			id = 326,
-			type = 111,
-		},
-		{
-			name = "Bastion - Resevoir Upgrades (327)",
-			id = 327,
-			type = 111,
-		},
-		{
-			name = "Ardenweald - Resevoir Upgrades (328)",
-			id = 328,
-			type = 111,
-		},
-		{
-			name = "Maldraxxus- Resevoir Upgrades (329)",
-			id = 329,
-			type = 111,
-		},
-		{
-			name = "Emeni (330)",
-			id = 330,
-			type = 111,
-		},
-		{
-			name = "Korayn (334)",
-			id = 334,
-			type = 111,
-		},
-		{
-			name = "Channel Anima (345)",
-			id = 345,
-			type = 111,
-		},
-		{
-			name = "Channel Anima (346)",
-			id = 346,
-			type = 111,
-		},
-		{
-			name = "Channel Anima (347)",
-			id = 347,
-			type = 111,
-		},
-		{
-			name = "Channel Anima (348)",
-			id = 348,
-			type = 111,
-		},
-		{
-			name = "Bonesmith Heirmir (349)",
-			id = 349,
-			type = 111,
-		},
-		{
-			name = "Pelagos (357)",
-			id = 357,
-			type = 111,
-		},
-		{
-			name = "Kleia (360)",
-			id = 360,
-			type = 111,
-		},
-		{
-			name = "Mikanikos (365)",
-			id = 365,
-			type = 111,
-		},
-		{
-			name = "Nadjia the Mistblade (368)",
-			id = 368,
-			type = 111,
-		},
-		{
-			name = "Theotar the Mad Duke (392)",
-			id = 392,
-			type = 111,
-		},
-		{
-			name = "Bastion - Covenant Abilities (393)",
-			id = 393,
-			type = 111,
-		},
-		{
-			name = "Maldraxxus - Covenant Abilities (395)",
-			id = 395,
-			type = 111,
-		},
-		{
-			name = "Revendreth - Covenant Abilities (396)",
-			id = 396,
-			type = 111,
-		},
-		{
-			name = "Ardenweald - Covenant Abilities (397)",
-			id = 397,
-			type = 111,
-		},
-		{
-			name = "Device Upgrade Console (465)",
-			id = 465,
-			type = 111,
-		},
-		{
-			name = "Progenitor Core (466)",
-			id = 466,
-			type = 111,
-		},
+		{ type = 111, id = 150, name = "Unnamed research" },
+		{ type = 111, id = 272, name = "Nadjia the Mistblade" },
+		{ type = 111, id = 327, name = "Bastion - Resevoir Upgrades" },
+		{ type = 111, id = 328, name = "Ardenweald - Resevoir Upgrades" },
+		{ type = 111, id = 329, name = "Maldraxxus- Resevoir Upgrades" },
+		{ type = 111, id = 326, name = "Revendreth - Resevoir Upgrades" },
+		{ type = 111, id = 465, name = "Device Upgrade Console" },
+		{ type = 111, id = 466, name = "Progenitor Core" },
 	},
 	BFA = {
-		{
-			name = "Progenitor Core JZB",
-			id = 468,
-			type = 9,
-		},
-		{
-			name = "Visions Research [NYI]",
-			id = 260,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research - Solo",
-			id = 263,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research - Group",
-			id = 264,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research - Gambler",
-			id = 265,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research - Speedrunner",
-			id = 266,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research - Explorer",
-			id = 267,
-			type = 9,
-		},
-		{
-			name = "MOTHER's Research - Milestones",
-			id = 268,
-			type = 9,
-		},
+		{ type = 9, id = 468, name = "Progenitor Core JZB" },
+		{ type = 9, id = 260, name = "Visions Research [NYI]" },
+		{ type = 9, id = 263, name = "MOTHER's Research - Solo" },
+		{ type = 9, id = 264, name = "MOTHER's Research - Group" },
+		{ type = 9, id = 265, name = "MOTHER's Research - Gambler" },
+		{ type = 9, id = 266, name = "MOTHER's Research - Speedrunner" },
+		{ type = 9, id = 267, name = "MOTHER's Research - Explorer" },
+		{ type = 9, id = 268, name = "MOTHER's Research - Milestones" },
 	},
 	Legion = {
-		{
-			name = "Chris Test Tree Set (335)",
-			id = 335,
-			type = 3,
-		},
+		{ type = 3, id = 335, name = "Chris Test Tree Set" },
 	},
 }
 
@@ -432,12 +148,11 @@ function ResearchViewer:OnInitialize()
 			end,
 			OnTooltipShow = function(tooltip)
 				tooltip:AddLine("Research Viewer")
-				tooltip:AddLine("Click to view various research trees from the field.")
-				tooltip:AddLine("Shift+Click to hide this button. ('/rv reset' to restore)")
+				tooltip:AddLine("|cffeda55fClick|r to view various research trees from the field.")
+				tooltip:AddLine("|cffeda55fShift-Click|r to hide this button. ('/rv reset' to restore)")
 			end,
 		}
 	)
-
 	LibDBIcon:Register("ResearchViewer", ResearchViewerLDB, self.db.ldbOptions)
 
 	EventRegistry:RegisterCallback('GarrisonTalentButtonMixin.TalentTooltipShown',
@@ -553,60 +268,56 @@ function ResearchViewer:OpenSelectedResearch()
 	end
 end
 
+local isMenuItemChecked
+do
+	isMenuItemChecked = function(button)
+		if button.arg1 and button.arg1.id then
+			return button.arg1.id == C_Garrison.GetCurrentGarrTalentTreeID()
+		end
+		return button.arg2 and button.arg2[C_Garrison.GetCurrentGarrTalentTreeID()]
+	end
+end
+
+function ResearchViewer:BuildFinalSubMenuItem(parentList, value, setValueFunc)
+	table.insert(parentList, {
+		text = string.format("%s (%d)", value.name, value.id),
+		func = setValueFunc,
+		arg1 = value,
+		checked = isMenuItemChecked,
+	})
+end
+
+function ResearchViewer:BuildSubMenuList(subMenuName, parentIdList, parentList, setValueFunc, list)
+	local subMenuList = {}
+	local subMenuIds = {}
+
+	for key, value in pairs(list) do
+		if (type(key) == "number") then
+			if parentIdList then parentIdList[value.id] = true end
+			subMenuIds[value.id] = true
+			self:BuildFinalSubMenuItem(subMenuList, value, setValueFunc)
+		else
+			self:BuildSubMenuList(key, subMenuIds, subMenuList, setValueFunc, value)
+		end
+	end
+	table.insert(parentList, {
+		text = subMenuName,
+		hasArrow = true,
+		menuList = subMenuList,
+		arg2 = subMenuIds,
+		checked = isMenuItemChecked,
+	})
+end
+
 function ResearchViewer:BuildMenu(setValueFunc)
 	local menu = {}
 
 	for expansion, list in pairs(self.talentTrees) do
-		local menuList = {}
-		local ids = {}
-
-		for _, value in pairs(list) do
-			ids[value.id] = true
-			table.insert(menuList, {
-				text = value.name,
-				func = setValueFunc,
-				arg1 = value,
-				checked = function() return C_Garrison.GetCurrentGarrTalentTreeID() == value.id end,
-			})
-		end
-
-		table.insert(menu, {
-			text = expansion,
-			hasArrow = true,
-			menuList = menuList,
-			checked = function() return ids[C_Garrison.GetCurrentGarrTalentTreeID()] end,
-		})
+		self:BuildSubMenuList(expansion, nil, menu, setValueFunc, list)
 	end
 
-	local neverImplementedMenu = {}
-	for expansion, list in pairs(self.neverImplemented) do
-		local menuList = {}
-		local ids = {}
+	self:BuildSubMenuList("Never Implemented", nil, menu, setValueFunc, self.neverImplemented)
 
-		for _, value in pairs(list) do
-			ids[value.id] = true
-			value.neverImplemented = true
-			table.insert(menuList, {
-				text = value.name,
-				func = setValueFunc,
-				arg1 = value,
-				checked = function() return C_Garrison.GetCurrentGarrTalentTreeID() == value.id end,
-			})
-		end
-
-		table.insert(neverImplementedMenu, {
-			text = expansion,
-			hasArrow = true,
-			menuList = menuList,
-			checked = function() return ids[C_Garrison.GetCurrentGarrTalentTreeID()] end,
-		})
-	end
-	table.insert(menu, {
-		text = "Never Implemented",
-		hasArrow = true,
-		menuList = neverImplementedMenu,
-		checked = function() return ResearchViewer.selectedTreeInfo and ResearchViewer.selectedTreeInfo.neverImplemented end,
-	})
 	return menu
 end
 
