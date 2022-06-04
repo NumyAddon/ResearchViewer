@@ -141,6 +141,7 @@ function ResearchViewer:OnInitialize()
 			icon = "interface/icons/inv_misc_book_11.blp",
 			OnClick = function()
 				if IsShiftKeyDown() then
+					ResearchViewer.db.ldbOptions.hide = true
 					LibDBIcon:Hide(name)
 					return
 				end
