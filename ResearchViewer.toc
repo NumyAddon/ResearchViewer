@@ -4,6 +4,7 @@
 ## Author: Numy
 ## Version: @project-version@
 ## SavedVariables: ResearchViewerDB
+## SavedVariablesPerCharacter: ResearchViewerCharDB
 ## X-Curse-Project-ID: 627862
 
 libs\load_libs.xml

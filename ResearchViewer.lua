@@ -1,6 +1,6 @@
 local name, _ = ...
 
-local ResearchViewer = {}
+ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
 
 local playerClass, _ = UnitClassBase("player")
@@ -117,9 +117,26 @@ ResearchViewer.neverImplemented = {
 	},
 }
 
+local frame = CreateFrame("FRAME")
+local function OnEvent(_, event, ...)
+	if event == "ADDON_LOADED" then
+		local addonName = ...
+		if addonName == name then
+			ResearchViewer:OnInitialize()
+		end
+		if addonName == "Blizzard_OrderHallUI" then
+			ResearchViewer:InitDropDown()
+		end
+	end
+end
+frame:HookScript('OnEvent', OnEvent)
+frame:RegisterEvent('ADDON_LOADED')
+
 function ResearchViewer:OnInitialize()
 	ResearchViewerDB = ResearchViewerDB or {}
+	ResearchViewerCharDB = ResearchViewerCharDB or { lastSelected = ResearchViewerDB.lastSelected }
 	self.db = ResearchViewerDB
+	self.charDb = ResearchViewerCharDB
 
 	if not self.db.ldbOptions then
 		self.db.ldbOptions = {
@@ -177,7 +194,7 @@ function ResearchViewer:OnInitialize()
 		if message == "reset" then
 			wipe(ResearchViewer.db.ldbOptions)
 			ResearchViewer.db.ldbOptions.hide = false
-			ResearchViewer.db.lastSelected = nil
+			ResearchViewer.charDb.lastSelected = nil
 
 			LibDBIcon:Hide(name)
 			LibDBIcon:Show(name)
@@ -186,21 +203,6 @@ function ResearchViewer:OnInitialize()
 		ResearchViewer:OpenResearchView()
 	end
 end
-
-local frame = CreateFrame("FRAME")
-local function OnEvent(_, event, ...)
-	if event == "ADDON_LOADED" then
-		local addonName = ...
-		if addonName == name then
-			ResearchViewer:OnInitialize()
-		end
-		if addonName == "Blizzard_OrderHallUI" then
-			ResearchViewer:InitDropDown()
-		end
-	end
-end
-frame:HookScript('OnEvent', OnEvent)
-frame:RegisterEvent('ADDON_LOADED')
 
 function ResearchViewer:AlreadyAdded(textLine, tooltip)
 	if textLine == nil then
@@ -250,7 +252,7 @@ end
 
 function ResearchViewer:OpenResearchView()
 	OrderHall_LoadUI()
-	ResearchViewer.selectedTreeInfo = ResearchViewer.db and ResearchViewer.db.lastSelected or ResearchViewer.talentTrees.Shadowlands[2]
+	ResearchViewer.selectedTreeInfo = ResearchViewer.charDb and ResearchViewer.charDb.lastSelected or ResearchViewer.talentTrees.Shadowlands[2]
 	ResearchViewer:InitDropDown()
 	ResearchViewer:OpenSelectedResearch()
 end
@@ -258,7 +260,7 @@ end
 local hooked = false
 function ResearchViewer:OpenSelectedResearch()
 	OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id)
-	self.db.lastSelected = self.selectedTreeInfo
+	self.charDb.lastSelected = self.selectedTreeInfo
 	ToggleOrderHallTalentUI()
 	self.dropDownButton:Show()
 	if not hooked then
