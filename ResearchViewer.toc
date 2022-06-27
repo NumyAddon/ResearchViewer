@@ -1,5 +1,5 @@
 ## Interface: @toc-version-retail@
-## Title: Reserach Viewer
+## Title: Research Viewer
 ## Notes: Minimap Button to view your various Research UIs
 ## Author: Numy
 ## Version: @project-version@
