@@ -19,7 +19,30 @@ local orderHalls = {
 	["DEMONHUNTER"] = 125,
 }
 
+ResearchViewer.orderedExpansions = {
+	'Dragonflight (unordered)',
+	'Shadowlands',
+	'BFA',
+	'Legion',
+}
+
 ResearchViewer.talentTrees = {
+	["Dragonflight (unordered)"] = {
+		{ type = 111, id = 463, name = "Drake Mastery Progression" },
+		{ type = 111, id = 467, name = "Drake Mastery Progression" },
+		{ type = 111, id = 479, name = "Thunder Lizard Effigy" },
+		{ type = 111, id = 482, name = "Dragonriding Skills" },
+		{ type = 111, id = 483, name = "Monster Hunter's Gear Rack" },
+		{ type = 111, id = 484, name = "Advanced Dragonriding" },
+		{ type = 111, id = 485, name = "Shikaar Hunting Tactics" },
+		{ type = 111, id = 486, name = "Select Your Companion" },
+		{ type = 111, id = 487, name = "Clan Teerai Progression" },
+		{ type = 111, id = 488, name = "Tuskarr Fishing" },
+		{ type = 111, id = 489, name = "Expedition Supplies" },
+		{ type = 111, id = 491, name = "Hunting Party Loadout" },
+		{ type = 111, id = 492, name = "Cobalt Assembly Arcana" },
+		{ type = 111, id = 493, name = "Cobalt Assembly Arcana" },
+	},
 	Shadowlands = {
 		{ type = 111, id = 461, name = "The Box of Many Things" },
 		{ type = 111, id = 474, name = "Cypher Research Console" },
@@ -237,7 +260,7 @@ function ResearchViewer:MakeDropDownButton()
 	icon:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
 
 	mainButton:SetText("Select another Research tree")
-	mainButton:SetSize(200, 22)
+	mainButton:SetSize(210, 22)
 	mainButton:SetPoint("TOPRIGHT", 10, 20)
 
 	dropDown:Hide()
@@ -271,6 +294,12 @@ function ResearchViewer:OpenSelectedResearch()
 	end
 end
 
+function ResearchViewer:TreeExists(treeId)
+	local treeInfo = C_Garrison.GetTalentTreeInfo(treeId)
+
+	return treeInfo and treeInfo.treeID == treeId
+end
+
 local isMenuItemChecked
 do
 	isMenuItemChecked = function(button)
@@ -282,11 +311,13 @@ do
 end
 
 function ResearchViewer:BuildFinalSubMenuItem(parentList, value, setValueFunc)
+	local treeExists = self:TreeExists(value.id)
 	table.insert(parentList, {
-		text = string.format("%s (%d)", value.name, value.id),
+		text = string.format("%s (%s)", value.name, treeExists and value.id or (value.id .. ' - not available')),
 		func = setValueFunc,
 		arg1 = value,
 		checked = isMenuItemChecked,
+		disabled = not treeExists,
 	})
 end
 
@@ -317,7 +348,8 @@ end
 function ResearchViewer:BuildMenu(setValueFunc)
 	local menu = {}
 
-	for expansion, list in pairs(self.talentTrees) do
+	for _, expansion in ipairs(self.orderedExpansions) do
+		local list = self.talentTrees[expansion]
 		self:BuildSubMenuList(expansion, nil, menu, setValueFunc, list)
 	end
 
