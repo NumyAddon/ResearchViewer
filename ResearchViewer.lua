@@ -252,7 +252,7 @@ end
 
 function ResearchViewer:OpenResearchView()
 	OrderHall_LoadUI()
-	ResearchViewer.selectedTreeInfo = ResearchViewer.charDb and ResearchViewer.charDb.lastSelected or ResearchViewer.talentTrees.Shadowlands[2]
+	ResearchViewer.selectedTreeInfo = ResearchViewer.charDb and ResearchViewer.charDb.lastSelected or ResearchViewer.talentTrees.Shadowlands[1]
 	ResearchViewer:InitDropDown()
 	ResearchViewer:OpenSelectedResearch()
 end
@@ -296,9 +296,11 @@ function ResearchViewer:BuildSubMenuList(subMenuName, parentIdList, parentList, 
 
 	for key, value in pairs(list) do
 		if (type(key) == "number") then
-			if parentIdList then parentIdList[value.id] = true end
-			subMenuIds[value.id] = true
-			self:BuildFinalSubMenuItem(subMenuList, value, setValueFunc)
+			if value.id or value.name ~= "Your class Order Hall" then
+				if parentIdList then parentIdList[value.id] = true end
+				subMenuIds[value.id] = true
+				self:BuildFinalSubMenuItem(subMenuList, value, setValueFunc)
+			end
 		else
 			self:BuildSubMenuList(key, subMenuIds, subMenuList, setValueFunc, value)
 		end
