@@ -2,6 +2,8 @@ local name, _ = ...
 
 ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
+--- @type LibUIDropDownMenu
+local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 
 local playerClass, _ = UnitClassBase("player")
 local orderHalls = {
@@ -225,6 +227,43 @@ function ResearchViewer:OnInitialize()
 		end
 		ResearchViewer:OpenResearchView()
 	end
+
+	-- the first time you get tree info after launching the game, it's very slow
+	-- so instead of having a full second of lag when you open the research viewer,
+	-- we'll just get the info now, and spread it out a bit over time
+	local treeIds = self:GetTreeList()
+	local treeIdList = {}
+	for _, treeId in pairs(treeIds) do
+		table.insert(treeIdList, treeId)
+	end
+	local ticker
+	local i = 0
+	ticker = C_Timer.NewTicker(0.2, function()
+		i = i + 1
+		local treeId = treeIdList[i]
+		if not treeId then
+			ticker:Cancel()
+			return
+		end
+		ResearchViewer:TreeExists(treeId)
+	end)
+end
+
+function ResearchViewer:GetTreeList(treeList, tables)
+	treeList = treeList or {}
+	tables = tables or { ni = self.neverImplemented, tt = self.talentTrees }
+
+	for key, value in pairs(tables) do
+		if (type(key) == "number") then
+			if value.id then
+				treeList[value.id] = value.id
+			end
+		else
+			self:GetTreeList(treeList, value)
+		end
+	end
+
+	return treeList
 end
 
 function ResearchViewer:AlreadyAdded(textLine, tooltip)
@@ -245,12 +284,12 @@ end
 
 function ResearchViewer:MakeDropDownButton()
 	local mainButton = CreateFrame("BUTTON", nil, OrderHallTalentFrame, "UIPanelButtonTemplate")
-	local dropDown = CreateFrame("FRAME", nil, OrderHallTalentFrame, "UIDropDownMenuTemplate")
+	local dropDown = LibDD:Create_UIDropDownMenu(nil, OrderHallTalentFrame)
 
 	mainButton = Mixin(mainButton, DropDownToggleButtonMixin)
 	mainButton:OnLoad_Intrinsic()
 	mainButton:SetScript("OnMouseDown", function(self)
-		ToggleDropDownMenu(1, nil, dropDown, self, 204, 15, ResearchViewer.menuList or nil)
+		LibDD:ToggleDropDownMenu(1, nil, dropDown, self, 204, 15, ResearchViewer.menuList or nil)
 	end)
 
 	mainButton.Icon = mainButton:CreateTexture(nil, "ARTWORK")
@@ -294,10 +333,17 @@ function ResearchViewer:OpenSelectedResearch()
 	end
 end
 
+local treeExistsCache = {}
 function ResearchViewer:TreeExists(treeId)
+	if treeExistsCache[treeId] ~= nil then
+		return treeExistsCache[treeId]
+	end
 	local treeInfo = C_Garrison.GetTalentTreeInfo(treeId)
 
-	return treeInfo and treeInfo.treeID == treeId
+	local exists = treeInfo and treeInfo.treeID == treeId
+	treeExistsCache[treeId] = exists
+
+	return exists
 end
 
 local isMenuItemChecked
@@ -363,7 +409,7 @@ function ResearchViewer:InitDropDown()
 	self.dropDownButton, self.dropDown = self:MakeDropDownButton()
 
 	local function setValue(_, newValue)
-		CloseDropDownMenus()
+		LibDD:CloseDropDownMenus()
 
 		ToggleOrderHallTalentUI()
 
@@ -372,5 +418,5 @@ function ResearchViewer:InitDropDown()
 	end
 
 	self.menuList = self:BuildMenu(setValue)
-	EasyMenu(self.menuList, self.dropDown, self.dropDown, 0, 0)
+	LibDD:EasyMenu(self.menuList, self.dropDown, self.dropDown, 0, 0)
 end
