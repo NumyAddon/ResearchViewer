@@ -178,7 +178,7 @@ function ResearchViewer:OnInitialize()
     local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
             name,
             {
-                type = "data source",
+                type = "launcher",
                 text = "Research Viewer",
                 icon = "interface/icons/inv_misc_book_11.blp",
                 OnClick = function()
