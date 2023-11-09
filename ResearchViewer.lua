@@ -3,7 +3,7 @@ local name, _ = ...
 ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
 --- @type LibUIDropDownMenu
-local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
+local LibDD = LibStub("LibUIDropDownMenuNumy-4.0")
 
 local playerClass, _ = UnitClassBase("player")
 local orderHalls = {
