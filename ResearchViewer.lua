@@ -304,7 +304,7 @@ function ResearchViewer:MakeDropDownButton()
 
     dropDown:Hide()
 
-    if IsAddOnLoaded("ElvUI") then
+    if C_AddOns.IsAddOnLoaded("ElvUI") then
         unpack(ElvUI):GetModule("Skins"):HandleDropDownBox(dropDown)
         unpack(ElvUI):GetModule("Skins"):HandleButton(mainButton)
     end
