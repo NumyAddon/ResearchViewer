@@ -2,7 +2,6 @@ local name, _ = ...
 
 ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
---- @type LibUIDropDownMenu
 local LibDD = LibStub("LibUIDropDownMenuNumy-4.0")
 
 local playerClass, _ = UnitClassBase("player")
@@ -20,8 +19,10 @@ local orderHalls = {
     ["DRUID"] = 107,
     ["DEMONHUNTER"] = 125,
 }
+local isTWW = select(4, GetBuildInfo()) >= 110000
 
 ResearchViewer.orderedExpansions = {
+    isTWW and 'The War Within (unordered)' or false,
     'Dragonflight (unordered)',
     'Shadowlands',
     'BFA',
@@ -29,6 +30,10 @@ ResearchViewer.orderedExpansions = {
 }
 
 ResearchViewer.talentTrees = {
+    ["The War Within (unordered)"] = isTWW and {
+        { type = 111, id = 495, name = "Rexxar's Ability" },
+        { type = 111, id = 496, name = "Awakening The Machine" },
+    } or nil,
     ["Dragonflight (unordered)"] = {
         { type = 111, id = 463, name = "Drake Mastery Progression" },
         { type = 111, id = 467, name = "Drake Mastery Progression" },
@@ -395,8 +400,10 @@ function ResearchViewer:BuildMenu(setValueFunc)
     local menu = {}
 
     for _, expansion in ipairs(self.orderedExpansions) do
-        local list = self.talentTrees[expansion]
-        self:BuildSubMenuList(expansion, nil, menu, setValueFunc, list)
+        if expansion then
+            local list = self.talentTrees[expansion]
+            self:BuildSubMenuList(expansion, nil, menu, setValueFunc, list)
+        end
     end
 
     self:BuildSubMenuList("Never Implemented", nil, menu, setValueFunc, self.neverImplemented)
