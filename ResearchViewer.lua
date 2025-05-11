@@ -19,8 +19,6 @@ local orderHalls = {
     ["DEMONHUNTER"] = 125,
 }
 
-local tocVersion = select(4, GetBuildInfo())
-
 local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["The War Within"] = {
@@ -436,7 +434,7 @@ function ResearchViewer:ToggleUI()
 end
 
 function ResearchViewer:OpenGenericTalentTree(treeID)
-    if not self:TraitTreeExists(treeID) or true then
+    if not self:TraitTreeExists(treeID) then
         return false;
     end
 
