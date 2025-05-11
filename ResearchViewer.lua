@@ -455,7 +455,7 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
         end
         local subMenuButton = parentDescription:CreateRadio(entry.name, isSelectedFunc, setValueFunc, data)
         if not entry.isTree then
-            local dataTables = parentDataTables or {}
+            local dataTables = CreateFromMixins(parentDataTables or {})
             table.insert(dataTables, data)
             self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setValueFunc, dataTables)
         end
