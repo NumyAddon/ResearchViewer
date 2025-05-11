@@ -19,10 +19,31 @@ local orderHalls = {
     ["DEMONHUNTER"] = 125,
 }
 
+local tocVersion = select(4, GetBuildInfo())
+
 local increment = CreateCounter();
 ResearchViewer.talentTrees = {
+    ["The War Within"] = {
+        order = increment(),
+        tocVersion >= 110107 and { isTraitTree = true, id = 1061, name = GENERIC_TRAIT_FRAME_TITAN_CONSOLE_TITLE } or nil,
+        { isTraitTree = true, id = 1057, name = GENERIC_TRAIT_FRAME_VISIONS_TITLE },
+        { isTraitTree = true, id = 1056, name = GENERIC_TRAIT_FRAME_DRIVE_TITLE },
+        { isTraitTree = true, id = 1060, name = "Brann Delve Season 2" },
+        { isTraitTree = true, id = 1046, name = GENERIC_TRAIT_FRAME_THE_VIZIER_TITLE },
+        { isTraitTree = true, id = 1045, name = GENERIC_TRAIT_FRAME_THE_GENERAL_TITLE },
+        { isTraitTree = true, id = 1042, name = GENERIC_TRAIT_FRAME_THE_WEAVER_TITLE },
+        { isTraitTree = true, id = 1054, name = "??" },
+        { isTraitTree = true, id = 898, name = "??" },
+        { isTraitTree = true, id = 876, name = "??" },
+        { isTraitTree = true, id = 875, name = "??" },
+        { isTraitTree = true, id = 775, name = "??" },
+        { isTraitTree = true, id = 751, name = "??" },
+        { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
+        { isTraitTree = true, id = 874, name = "Brann Delve Season 1" },
+    },
     Dragonflight = {
         order = increment(),
+        { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
         { type = 111, id = 489, name = "Expedition Supplies" },
         { type = 111, id = 493, name = "Cobalt Assembly Arcana" },
         { type = 111, id = 486, name = "Select Your Companion" },
@@ -154,8 +175,24 @@ ResearchViewer.neverImplemented = {
     },
 }
 
-EventUtil.ContinueOnAddOnLoaded(name, function()
-    ResearchViewer:OnInitialize()
+local f = CreateFrame("Frame")
+f:RegisterEvent("ADDON_LOADED")
+f:SetScript("OnEvent", function(_, _, addonName)
+    if addonName == name then
+        ResearchViewer:OnInitialize()
+    end
+    if addonName == "Blizzard_OrderHallUI" then
+        ResearchViewer:MakeDropDownButton(OrderHallTalentFrame)
+        OrderHallTalentFrame:HookScript("OnHide", function()
+            ResearchViewer.selectedTreeInfo = nil
+        end)
+    end
+    if addonName == "Blizzard_GenericTraitUI" then
+        ResearchViewer:MakeDropDownButton(GenericTraitFrame)
+        GenericTraitFrame:HookScript("OnHide", function()
+            ResearchViewer.selectedTreeInfo = nil
+        end)
+    end
 end)
 
 function ResearchViewer:OnInitialize()
@@ -171,32 +208,32 @@ function ResearchViewer:OnInitialize()
     end
 
     local original = C_Garrison.GetCurrentGarrTalentTreeID
-    C_Garrison.GetCurrentGarrTalentTreeID = function()
-        if ResearchViewer.selectedTreeInfo then return ResearchViewer.selectedTreeInfo.id end
+    C_Garrison.GetCurrentGarrTalentTreeID = function() ---@diagnostic disable-line: duplicate-set-field
+        if self.selectedTreeInfo then return self.selectedTreeInfo.id end
 
         return original()
     end
 
     local ResearchViewerLDB = LibStub("LibDataBroker-1.1"):NewDataObject(
-            name,
-            {
-                type = "launcher",
-                text = "Research Viewer",
-                icon = "interface/icons/inv_misc_book_11.blp",
-                OnClick = function()
-                    if IsShiftKeyDown() then
-                        ResearchViewer.db.ldbOptions.hide = true
-                        LibDBIcon:Hide(name)
-                        return
-                    end
-                    ResearchViewer:OpenResearchView()
-                end,
-                OnTooltipShow = function(tooltip)
-                    tooltip:AddLine("Research Viewer")
-                    tooltip:AddLine("|cffeda55fClick|r to view various research trees from the field.")
-                    tooltip:AddLine("|cffeda55fShift-Click|r to hide this button. ('/rv reset' to restore)")
-                end,
-            }
+        name,
+        {
+            type = "launcher",
+            text = "Research Viewer",
+            icon = "interface/icons/inv_misc_book_11.blp",
+            OnClick = function()
+                if IsShiftKeyDown() then
+                    self.db.ldbOptions.hide = true
+                    LibDBIcon:Hide(name)
+                    return
+                end
+                self:OpenResearchView()
+            end,
+            OnTooltipShow = function(tooltip)
+                tooltip:AddLine("Research Viewer")
+                tooltip:AddLine("|cffeda55fClick|r to view various research/generic talent trees from the field.")
+                tooltip:AddLine("|cffeda55fShift-Click|r to hide this button. ('/rv reset' to restore)")
+            end,
+        }
     )
     LibDBIcon:Register("ResearchViewer", ResearchViewerLDB, self.db.ldbOptions)
 
@@ -233,34 +270,31 @@ function ResearchViewer:OnInitialize()
     -- the first time you get tree info after launching the game, it's very slow
     -- so instead of having a full second of lag when you open the research viewer,
     -- we'll just get the info now, and spread it out a bit over time
-    local treeIds = self:GetTreeList()
-    local treeIdList = {}
-    for _, treeId in pairs(treeIds) do
-        table.insert(treeIdList, treeId)
-    end
+    local treeIDList = GetValuesArray(self:GetTreeList())
     local ticker
     local i = 0
     ticker = C_Timer.NewTicker(0.2, function()
         i = i + 1
-        local treeId = treeIdList[i]
-        if not treeId then
+        local treeID = treeIDList[i]
+        if not treeID then
             ticker:Cancel()
             return
         end
-        ResearchViewer:TreeExists(treeId)
+        ResearchViewer:TreeExists(treeID)
     end)
 end
 
+--- @return table<number, number>
 function ResearchViewer:GetTreeList(treeList, tables)
     treeList = treeList or {}
     tables = tables or { ni = self.neverImplemented, tt = self.talentTrees }
 
     for key, value in pairs(tables) do
-        if (type(key) == "number") then
-            if value.id then
+        if value and type(key) == "number" then
+            if value.id and not value.isTraitTree then
                 treeList[value.id] = value.id
             end
-        elseif key ~= "order" then
+        elseif value and key ~= "order" then
             self:GetTreeList(treeList, value)
         end
     end
@@ -279,11 +313,11 @@ function ResearchViewer:GetOrderedTreeIDs(list, subItems)
     local temp = {}
     local orderOffset = #subItems + 10
     for key, value in pairs(subItems) do
-        if type(key) == "number" then
+        if value and type(key) == "number" then
             if not value.special then
                 table.insert(temp, { id = value.id, order = key })
             end
-        elseif key ~= "order" then
+        elseif value and key ~= "order" then
             table.insert(temp, { subItems = value, order = value.order + orderOffset })
         end
     end
@@ -316,11 +350,12 @@ function ResearchViewer:AlreadyAdded(textLine, tooltip)
     end
 end
 
-function ResearchViewer:MakeDropDownButton()
-    local dropdown = CreateFrame("DropdownButton", nil, OrderHallTalentFrame, "WowStyle1DropdownTemplate");
+--- @param parent GenericTraitFrame|OrderHallTalentFrame
+function ResearchViewer:MakeDropDownButton(parent)
+    local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate");
 
-    dropdown:OverrideText("Select another Research tree")
-    dropdown:SetWidth(230)
+    dropdown:OverrideText("Select another tree")
+    dropdown:SetWidth(165)
     dropdown:SetPoint("TOPRIGHT", 10, 20)
     dropdown:EnableMouseWheel(true)
     function dropdown:PickTreeID(treeID)
@@ -331,6 +366,7 @@ function ResearchViewer:MakeDropDownButton()
         end)
     end
     function dropdown:Increment()
+        if not ResearchViewer.selectedTreeInfo then return end
         local currentTreeID = ResearchViewer.selectedTreeInfo.id
         local currentIndex = ResearchViewer.orderedTreeIDsMap[currentTreeID]
         local nextIndex = currentIndex + 1
@@ -340,6 +376,7 @@ function ResearchViewer:MakeDropDownButton()
         self:PickTreeID(ResearchViewer.orderedTreeIDs[nextIndex])
     end
     function dropdown:Decrement()
+        if not ResearchViewer.selectedTreeInfo then return end
         local currentTreeID = ResearchViewer.selectedTreeInfo.id
         local currentIndex = ResearchViewer.orderedTreeIDsMap[currentTreeID]
         local nextIndex = currentIndex - 1
@@ -350,10 +387,8 @@ function ResearchViewer:MakeDropDownButton()
     end
 
     dropdown:SetupMenu(function(_, rootDescription)
-        self:GenerateMenu(rootDescription)
+        self:GenerateMenu(rootDescription, parent)
     end)
-
-    dropdown:Hide()
 
     if C_AddOns.IsAddOnLoaded("ElvUI") and ElvUI then
         ElvUI[1]:GetModule("Skins"):HandleDropDownBox(dropdown)
@@ -364,23 +399,35 @@ end
 
 function ResearchViewer:OpenResearchView()
     OrderHall_LoadUI()
-    self.selectedTreeInfo = self.charDb and self.charDb.lastSelected or self.talentTrees.Shadowlands[1]
-    self:OpenSelectedResearch()
+    self.selectedTreeInfo = self.charDb and self.charDb.lastSelected or self.talentTrees['The War Within'][1] or self.talentTrees['The War Within'][2]
+    if self.selectedTreeInfo.isTraitTree then
+        self:OpenGenericTalentTree(self.selectedTreeInfo.id)
+    else
+        self:OpenSelectedResearch()
+    end
 end
 
-local hooked = false
-function ResearchViewer:OpenSelectedResearch()
-    OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id)
+function ResearchViewer:OpenGenericTalentTree(treeID)
     self.charDb.lastSelected = self.selectedTreeInfo
-    ToggleOrderHallTalentUI()
-    self.dropdownButton = self.dropdownButton or self:MakeDropDownButton()
-    self.dropdownButton:Show()
-    if not hooked then
-        hooked = true
-        OrderHallTalentFrame:HookScript("OnHide", function()
-            ResearchViewer.selectedTreeInfo = nil
-        end)
+    local systemID = C_Traits.GetSystemIDByTreeID(treeID)
+
+    GenericTraitUI_LoadUI();
+    GenericTraitFrame:Hide();
+    GenericTraitFrame:SetSystemID(systemID);
+    GenericTraitFrame:SetTreeID(treeID);
+    ShowUIPanel(GenericTraitFrame);
+    if GenericTraitFrame:GetNumPoints() == 0 then
+        GenericTraitFrame:SetPoint('TOPLEFT', 16, -116); -- roughly where it would normally open
     end
+    if not tIndexOf(UISpecialFrames, 'GenericTraitFrame') then
+        table.insert(UISpecialFrames, 'GenericTraitFrame');
+    end
+end
+
+function ResearchViewer:OpenSelectedResearch()
+    self.charDb.lastSelected = self.selectedTreeInfo
+    OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id)
+    ShowUIPanel(OrderHallTalentFrame);
 end
 
 local treeExistsCache = {}
@@ -396,23 +443,51 @@ function ResearchViewer:TreeExists(treeId)
     return exists
 end
 
+function ResearchViewer:TraitTreeExists(treeId)
+    return not not C_Traits.GetConfigIDByTreeID(treeId)
+end
+
 --- @param rootDescription RootMenuDescriptionProxy
-function ResearchViewer:GenerateMenu(rootDescription)
+--- @param owner GenericTraitFrame|OrderHallTalentFrame
+function ResearchViewer:GenerateMenu(rootDescription, owner)
     if not self.orderedTreeIDs then
         self.orderedTreeIDs = self:GetOrderedTreeIDs()
         self.orderedTreeIDsMap = tInvert(self.orderedTreeIDs)
     end
     local function openTree(data)
-        ToggleOrderHallTalentUI()
+        HideUIPanel(owner)
 
-        ResearchViewer.selectedTreeInfo = data
-        ResearchViewer:OpenSelectedResearch()
+        self.selectedTreeInfo = data
+        if data.isTraitTree then
+            HideUIPanel(GenericTraitFrame)
+
+            self:OpenGenericTalentTree(data.id)
+        else
+            HideUIPanel(OrderHallTalentFrame)
+
+            self:OpenSelectedResearch()
+        end
     end
     local function isSelected(data)
-        return data[self.selectedTreeInfo.id] or (data.id == self.selectedTreeInfo.id and data.type == self.selectedTreeInfo.type)
+        if self.selectedTreeInfo then
+            return
+                data[(self.selectedTreeInfo.isTraitTree and 'T' or 'R') .. self.selectedTreeInfo.id]
+                or (
+                    data.id == self.selectedTreeInfo.id
+                    and (data.type == self.selectedTreeInfo.type or data.isTraitTree == self.selectedTreeInfo.isTraitTree)
+                )
+        elseif owner == GenericTraitFrame and GenericTraitFrame:GetTalentTreeID() then
+            return
+                data.isTraitTree and data.id == GenericTraitFrame:GetTalentTreeID()
+                or (
+                    data['T' .. GenericTraitFrame:GetTalentTreeID()]
+                )
+        end
+
+        return false
     end
 
-    rootDescription:CreateTitle('Select another Research tree')
+    rootDescription:CreateTitle('Select another tree')
     self:GenerateSubMenuButtons(rootDescription, self.talentTrees, isSelected, openTree)
     local neverImplementedData = {}
     local neverImplemented = rootDescription:CreateRadio("Never Implemented", isSelected, openTree, neverImplementedData)
@@ -425,16 +500,20 @@ end
 --- @param isSelectedFunc fun(data: any): boolean
 function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setValueFunc, parentDataTables)
     local orderedList = {}
+    local notAvailableList = {}
     local orderOffset = #list + 10
     for key, value in pairs(list) do
         if type(key) == "number" then
-            local treeExists = self:TreeExists(value.id)
-            table.insert(orderedList, {
-                name = ("%s (%d%s)"):format(value.name, value.id, (treeExists and '' or ' - not available')),
-                order = key,
-                value = value,
-                isTree = true,
-            })
+            local treeExists = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
+            table.insert(
+                treeExists and orderedList or notAvailableList,
+                {
+                    name = ("%s (%s%d%s)"):format(value.name, (value.isTraitTree and 'T' or 'R'), value.id, (treeExists and '' or ' - not available')),
+                    order = key,
+                    value = value,
+                    isTree = true,
+                }
+            )
         elseif key ~= "order" then
             table.insert(orderedList, { name = key, order = value.order + orderOffset, value = value, isTree = false })
         end
@@ -447,7 +526,7 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
             data = entry.value
             if parentDataTables then
                 for _, parentData in ipairs(parentDataTables) do
-                    parentData[entry.value.id] = true
+                    parentData[(entry.value.isTraitTree and 'T' or 'R') .. entry.value.id] = true
                 end
             end
         else
@@ -458,6 +537,18 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
             local dataTables = CreateFromMixins(parentDataTables or {})
             table.insert(dataTables, data)
             self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setValueFunc, dataTables)
+        end
+    end
+    if next(notAvailableList) then
+        local dataTables = CreateFromMixins(parentDataTables or {})
+        local data = {}
+        table.insert(dataTables, data)
+        local subParent = parentDescription:CreateRadio("Not Available", isSelectedFunc, setValueFunc, data)
+        for _, entry in ipairs(notAvailableList) do
+            subParent:CreateRadio(entry.name, isSelectedFunc, setValueFunc, entry.value)
+            for _, parentData in ipairs(dataTables) do
+                parentData[(entry.value.isTraitTree and 'T' or 'R') .. entry.value.id] = true
+            end
         end
     end
 end
