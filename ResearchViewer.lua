@@ -17,6 +17,7 @@ local orderHalls = {
     ["MONK"] = 4,
     ["DRUID"] = 107,
     ["DEMONHUNTER"] = 125,
+    ["EVOKER"] = -1,
 }
 
 local increment = CreateCounter();
