@@ -25,9 +25,10 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["The War Within"] = {
         order = increment(),
-        tocVersion >= 110107 and { isTraitTree = true, id = 1061, name = GENERIC_TRAIT_FRAME_TITAN_CONSOLE_TITLE } or nil,
+        { isTraitTree = true, id = 1061, name = GENERIC_TRAIT_FRAME_TITAN_CONSOLE_TITLE or "Titan Console (added in 11.1.7)" },
         { isTraitTree = true, id = 1057, name = GENERIC_TRAIT_FRAME_VISIONS_TITLE },
         { isTraitTree = true, id = 1056, name = GENERIC_TRAIT_FRAME_DRIVE_TITLE },
+        { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
         { isTraitTree = true, id = 1060, name = "Brann Delve Season 2" },
         { isTraitTree = true, id = 1046, name = GENERIC_TRAIT_FRAME_THE_VIZIER_TITLE },
         { isTraitTree = true, id = 1045, name = GENERIC_TRAIT_FRAME_THE_GENERAL_TITLE },
@@ -38,7 +39,6 @@ ResearchViewer.talentTrees = {
         { isTraitTree = true, id = 875, name = "??" },
         { isTraitTree = true, id = 775, name = "??" },
         { isTraitTree = true, id = 751, name = "??" },
-        { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
         { isTraitTree = true, id = 874, name = "Brann Delve Season 1" },
     },
     Dragonflight = {
@@ -226,7 +226,7 @@ function ResearchViewer:OnInitialize()
                     LibDBIcon:Hide(name)
                     return
                 end
-                self:OpenResearchView()
+                self:ToggleUI()
             end,
             OnTooltipShow = function(tooltip)
                 tooltip:AddLine("Research Viewer")
@@ -264,7 +264,7 @@ function ResearchViewer:OnInitialize()
             LibDBIcon:Show(name)
             return
         end
-        ResearchViewer:OpenResearchView()
+        ResearchViewer:ToggleUI()
     end
 
     -- the first time you get tree info after launching the game, it's very slow
@@ -397,17 +397,49 @@ function ResearchViewer:MakeDropDownButton(parent)
     return dropdown
 end
 
-function ResearchViewer:OpenResearchView()
-    OrderHall_LoadUI()
-    self.selectedTreeInfo = self.charDb and self.charDb.lastSelected or self.talentTrees['The War Within'][1] or self.talentTrees['The War Within'][2]
+function ResearchViewer:ToggleUI()
+    self.selectedTreeInfo = self.charDb and self.charDb.lastSelected or nil
+    if not self.selectedTreeInfo then
+        for _, value in ipairs(self.talentTrees['The War Within']) do
+            local isAvailable = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
+            if isAvailable then
+                self.selectedTreeInfo = value
+                break
+            end
+        end
+        if not self.selectedTreeInfo then
+            for _, value in ipairs(self.talentTrees['Dragonflight']) do
+                local isAvailable = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
+                if isAvailable then
+                    self.selectedTreeInfo = value
+                    break
+                end
+            end
+        end
+    end
     if self.selectedTreeInfo.isTraitTree then
-        self:OpenGenericTalentTree(self.selectedTreeInfo.id)
+        if GenericTraitFrame and GenericTraitFrame:IsShown() then
+            HideUIPanel(GenericTraitFrame)
+        else
+            if not self:OpenGenericTalentTree(self.selectedTreeInfo.id) then
+                self.charDb.lastSelected = nil
+                self:ToggleUI()
+            end
+        end
     else
-        self:OpenSelectedResearch()
+        if OrderHallTalentFrame and OrderHallTalentFrame:IsShown() then
+            HideUIPanel(OrderHallTalentFrame)
+        else
+            self:OpenSelectedResearch()
+        end
     end
 end
 
 function ResearchViewer:OpenGenericTalentTree(treeID)
+    if not self:TraitTreeExists(treeID) or true then
+        return false;
+    end
+
     self.charDb.lastSelected = self.selectedTreeInfo
     local systemID = C_Traits.GetSystemIDByTreeID(treeID)
 
@@ -422,10 +454,13 @@ function ResearchViewer:OpenGenericTalentTree(treeID)
     if not tIndexOf(UISpecialFrames, 'GenericTraitFrame') then
         table.insert(UISpecialFrames, 'GenericTraitFrame');
     end
+
+    return true;
 end
 
 function ResearchViewer:OpenSelectedResearch()
     self.charDb.lastSelected = self.selectedTreeInfo
+    OrderHall_LoadUI()
     OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id)
     ShowUIPanel(OrderHallTalentFrame);
 end
@@ -443,8 +478,8 @@ function ResearchViewer:TreeExists(treeId)
     return exists
 end
 
-function ResearchViewer:TraitTreeExists(treeId)
-    return not not C_Traits.GetConfigIDByTreeID(treeId)
+function ResearchViewer:TraitTreeExists(treeID)
+    return not not C_Traits.GetConfigIDByTreeID(treeID)
 end
 
 --- @param rootDescription RootMenuDescriptionProxy
@@ -496,9 +531,9 @@ end
 
 --- @param parentDescription RootMenuDescriptionProxy|ElementMenuDescriptionProxy
 --- @param list table
---- @param setValueFunc fun(data: any)
+--- @param setSelectedFunc fun(data: any)
 --- @param isSelectedFunc fun(data: any): boolean
-function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setValueFunc, parentDataTables)
+function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setSelectedFunc, parentDataTables)
     local orderedList = {}
     local notAvailableList = {}
     local orderOffset = #list + 10
@@ -532,20 +567,20 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
         else
             data = {}
         end
-        local subMenuButton = parentDescription:CreateRadio(entry.name, isSelectedFunc, setValueFunc, data)
+        local subMenuButton = parentDescription:CreateRadio(entry.name, isSelectedFunc, entry.isTree and setSelectedFunc or nil, data)
         if not entry.isTree then
             local dataTables = CreateFromMixins(parentDataTables or {})
             table.insert(dataTables, data)
-            self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setValueFunc, dataTables)
+            self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setSelectedFunc, dataTables)
         end
     end
     if next(notAvailableList) then
         local dataTables = CreateFromMixins(parentDataTables or {})
         local data = {}
         table.insert(dataTables, data)
-        local subParent = parentDescription:CreateRadio("Not Available", isSelectedFunc, setValueFunc, data)
+        local subParent = parentDescription:CreateRadio("Not Available", isSelectedFunc, nil, data)
         for _, entry in ipairs(notAvailableList) do
-            subParent:CreateRadio(entry.name, isSelectedFunc, setValueFunc, entry.value)
+            subParent:CreateRadio(entry.name, isSelectedFunc, nil, entry.value)
             for _, parentData in ipairs(dataTables) do
                 parentData[(entry.value.isTraitTree and 'T' or 'R') .. entry.value.id] = true
             end
