@@ -24,7 +24,9 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["The War Within"] = {
         order = increment(),
-        { isTraitTree = true, id = 1061, name = GENERIC_TRAIT_FRAME_TITAN_CONSOLE_TITLE or "Titan Console (added in 11.1.7)" },
+        { isTraitTree = true, id = 1115, name = GENERIC_TRAIT_FRAME_RESHII_WRAPS_TITLE or "Reshii Wraps (added in 11.2.0)" },
+        { isTraitTree = true, id = 1151, name = "Brann Delve Season 3" },
+        { isTraitTree = true, id = 1061, name = GENERIC_TRAIT_FRAME_TITAN_CONSOLE_TITLE },
         { isTraitTree = true, id = 1057, name = GENERIC_TRAIT_FRAME_VISIONS_TITLE },
         { isTraitTree = true, id = 1056, name = GENERIC_TRAIT_FRAME_DRIVE_TITLE },
         { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
@@ -129,6 +131,7 @@ ResearchViewer.talentTrees = {
 ResearchViewer.neverImplemented = {
     ["The War Within"] = {
         order = increment(),
+        { type = 111, id = 498, name = "Earthen Obelisk" },
         { type = 111, id = 495, name = "Rexxar's Ability" },
         { type = 111, id = 496, name = "Awakening The Machine" },
         { type = 111, id = 497, name = "The Weaver" },
