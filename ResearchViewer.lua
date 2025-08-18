@@ -24,12 +24,12 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["The War Within"] = {
         order = increment(),
-        { isTraitTree = true, id = 1115, name = GENERIC_TRAIT_FRAME_RESHII_WRAPS_TITLE or "Reshii Wraps (added in 11.2.0)" },
+        { isTraitTree = true, id = 1115, name = GENERIC_TRAIT_FRAME_RESHII_WRAPS_TITLE },
+        { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
         { isTraitTree = true, id = 1151, name = "Brann Delve Season 3" },
         { isTraitTree = true, id = 1061, name = GENERIC_TRAIT_FRAME_TITAN_CONSOLE_TITLE },
         { isTraitTree = true, id = 1057, name = GENERIC_TRAIT_FRAME_VISIONS_TITLE },
         { isTraitTree = true, id = 1056, name = GENERIC_TRAIT_FRAME_DRIVE_TITLE },
-        { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
         { isTraitTree = true, id = 1060, name = "Brann Delve Season 2" },
         { isTraitTree = true, id = 1046, name = GENERIC_TRAIT_FRAME_THE_VIZIER_TITLE },
         { isTraitTree = true, id = 1045, name = GENERIC_TRAIT_FRAME_THE_GENERAL_TITLE },
@@ -401,6 +401,7 @@ end
 
 function ResearchViewer:ToggleUI()
     self.selectedTreeInfo = self.charDb and self.charDb.lastSelected or nil
+    if self.selectedTreeInfo and not self.selectedTreeInfo.id then self.selectedTreeInfo = nil end
     if not self.selectedTreeInfo then
         for _, value in ipairs(self.talentTrees['The War Within']) do
             local isAvailable = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
@@ -527,7 +528,7 @@ function ResearchViewer:GenerateMenu(rootDescription, owner)
     rootDescription:CreateTitle('Select another tree')
     self:GenerateSubMenuButtons(rootDescription, self.talentTrees, isSelected, openTree)
     local neverImplementedData = {}
-    local neverImplemented = rootDescription:CreateRadio("Never Implemented", isSelected, openTree, neverImplementedData)
+    local neverImplemented = rootDescription:CreateRadio("Never Implemented", isSelected, nil, neverImplementedData)
     self:GenerateSubMenuButtons(neverImplemented, self.neverImplemented, isSelected, openTree, { neverImplementedData })
 end
 
