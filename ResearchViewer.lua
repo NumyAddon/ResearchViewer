@@ -448,7 +448,11 @@ function ResearchViewer:OpenGenericTalentTree(treeID)
 
     GenericTraitUI_LoadUI();
     GenericTraitFrame:Hide();
-    GenericTraitFrame:SetSystemID(systemID);
+    if GenericTraitFrame.SetConfigIDBySystemID then
+        GenericTraitFrame:SetConfigIDBySystemID(systemID);
+    else
+        GenericTraitFrame:SetSystemID(systemID);
+    end
     GenericTraitFrame:SetTreeID(treeID);
     ShowUIPanel(GenericTraitFrame);
     if GenericTraitFrame:GetNumPoints() == 0 then
