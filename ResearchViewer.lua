@@ -3,6 +3,9 @@ local name = ...
 ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
 
+local LEMIX_SEASON = 2
+local LEGION_ARTIFACT_TREE = 1161
+
 local playerClass = UnitClassBase("player")
 local orderHalls = {
     ["WARRIOR"] = 122,
@@ -24,6 +27,7 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["The War Within"] = {
         order = increment(),
+        { isTraitTree = true, id = LEGION_ARTIFACT_TREE, name = "Legion Remix Artifact Traits" },
         { isTraitTree = true, id = 1115, name = GENERIC_TRAIT_FRAME_RESHII_WRAPS_TITLE },
         { isTraitTree = true, id = 672, name = GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE },
         { isTraitTree = true, id = 1151, name = "Brann Delve Season 3" },
@@ -195,6 +199,12 @@ f:SetScript("OnEvent", function(_, _, addonName)
             ResearchViewer.selectedTreeInfo = nil
         end)
     end
+    if addonName == "Blizzard_RemixArtifactUI" then
+        ResearchViewer:MakeDropDownButton(RemixArtifactFrame)
+        RemixArtifactFrame:HookScript("OnHide", function()
+            ResearchViewer.selectedTreeInfo = nil
+        end)
+    end
 end)
 
 function ResearchViewer:OnInitialize()
@@ -352,7 +362,7 @@ function ResearchViewer:AlreadyAdded(textLine, tooltip)
     end
 end
 
---- @param parent GenericTraitFrame|OrderHallTalentFrame
+--- @param parent GenericTraitFrame|OrderHallTalentFrame|RemixArtifactFrame
 function ResearchViewer:MakeDropDownButton(parent)
     local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate");
 
@@ -421,7 +431,9 @@ function ResearchViewer:ToggleUI()
         end
     end
     if self.selectedTreeInfo.isTraitTree then
-        if GenericTraitFrame and GenericTraitFrame:IsShown() then
+        if RemixArtifactFrame and RemixArtifactFrame:IsShown() and self.selectedTreeInfo.id == LEGION_ARTIFACT_TREE then
+            HideUIPanel(RemixArtifactFrame)
+        elseif GenericTraitFrame and GenericTraitFrame:IsShown() then
             HideUIPanel(GenericTraitFrame)
         else
             if not self:OpenGenericTalentTree(self.selectedTreeInfo.id) then
@@ -439,9 +451,29 @@ function ResearchViewer:ToggleUI()
 end
 
 function ResearchViewer:OpenGenericTalentTree(treeID)
-    if not self:TraitTreeExists(treeID) then
-        return false;
+    if LEGION_ARTIFACT_TREE == treeID then
+        if PlayerGetTimerunningSeasonID() ~= LEMIX_SEASON then return false; end
+        RemixArtifactUI_LoadUI();
+        RemixArtifactFrame:UpdateLayout();
+
+        local itemID = C_RemixArtifactUI.GetCurrArtifactItemID();
+        if itemID then
+            RemixArtifactFrame:SetArtifactItem(itemID);
+        end
+
+        local configID = C_Traits.GetConfigIDByTreeID(treeID);
+        RemixArtifactFrame:SetConfigID(configID);
+        ShowUIPanel(RemixArtifactFrame);
+        if RemixArtifactFrame:GetNumPoints() == 0 then
+            RemixArtifactFrame:SetPoint('TOPLEFT', 16, -116); -- roughly where it would normally open
+        end
+        if not tIndexOf(UISpecialFrames, 'RemixArtifactFrame') then
+            table.insert(UISpecialFrames, 'RemixArtifactFrame');
+        end
+
+        return true;
     end
+    if not self:TraitTreeExists(treeID) then return false; end
 
     self.charDb.lastSelected = self.selectedTreeInfo
     local systemID = C_Traits.GetSystemIDByTreeID(treeID)
@@ -486,6 +518,10 @@ function ResearchViewer:TreeExists(treeId)
 end
 
 function ResearchViewer:TraitTreeExists(treeID)
+    if LEGION_ARTIFACT_TREE == treeID then
+        return PlayerGetTimerunningSeasonID() == LEMIX_SEASON;
+    end
+
     return not not C_Traits.GetConfigIDByTreeID(treeID)
 end
 
@@ -501,7 +537,11 @@ function ResearchViewer:GenerateMenu(rootDescription, owner)
 
         self.selectedTreeInfo = data
         if data.isTraitTree then
-            HideUIPanel(GenericTraitFrame)
+            if data.id == LEGION_ARTIFACT_TREE then
+                HideUIPanel(RemixArtifactFrame)
+            else
+                HideUIPanel(GenericTraitFrame)
+            end
 
             self:OpenGenericTalentTree(data.id)
         else
@@ -523,6 +563,12 @@ function ResearchViewer:GenerateMenu(rootDescription, owner)
                 data.isTraitTree and data.id == GenericTraitFrame:GetTalentTreeID()
                 or (
                     data['T' .. GenericTraitFrame:GetTalentTreeID()]
+                )
+        elseif owner == RemixArtifactFrame then
+            return
+                data.isTraitTree and data.id == LEGION_ARTIFACT_TREE
+                or (
+                    data['T' .. LEGION_ARTIFACT_TREE]
                 )
         end
 
