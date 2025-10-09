@@ -453,6 +453,10 @@ end
 function ResearchViewer:OpenGenericTalentTree(treeID)
     if LEGION_ARTIFACT_TREE == treeID then
         if PlayerGetTimerunningSeasonID() ~= LEMIX_SEASON then return false; end
+        -- "shift right-click" the MH slot, which opens the correct tree
+        SocketInventoryItem(16);
+        if RemixArtifactFrame:IsShown() then return true; end
+        -- fallback in case the artifact isn't equipped for some reason
         RemixArtifactUI_LoadUI();
         RemixArtifactFrame:UpdateLayout();
 
