@@ -452,7 +452,7 @@ end
 
 function ResearchViewer:OpenGenericTalentTree(treeID)
     if LEGION_ARTIFACT_TREE == treeID then
-        if C_TimerunningUI.GetActiveTimerunningSeasonID() ~= LEMIX_SEASON then return false; end
+        if PlayerGetTimerunningSeasonID() ~= LEMIX_SEASON then return false; end
         -- "shift right-click" the MH slot, which opens the correct tree
         SocketInventoryItem(16);
         if RemixArtifactFrame:IsShown() then return true; end
@@ -523,7 +523,7 @@ end
 
 function ResearchViewer:TraitTreeExists(treeID)
     if LEGION_ARTIFACT_TREE == treeID then
-        return C_TimerunningUI.GetActiveTimerunningSeasonID() == LEMIX_SEASON;
+        return PlayerGetTimerunningSeasonID() == LEMIX_SEASON;
     end
 
     return not not C_Traits.GetConfigIDByTreeID(treeID)
