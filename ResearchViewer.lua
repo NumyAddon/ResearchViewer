@@ -25,6 +25,21 @@ local orderHalls = {
 
 local increment = CreateCounter();
 ResearchViewer.talentTrees = {
+    ["Midnight"] = {
+        order = increment(),
+        { type = 111, id = 499, name = "Loa Blessings" },
+        { isTraitTree = true, id = 1180, name = "??" },
+        { isTraitTree = true, id = 1179, name = "??" },
+        { isTraitTree = true, id = 1177, name = "??" },
+        { isTraitTree = true, id = 1166, name = "??" },
+        { isTraitTree = true, id = 1162, name = "??" },
+        { isTraitTree = true, id = 1161, name = "??" },
+        { isTraitTree = true, id = 1141, name = "??" },
+        { isTraitTree = true, id = 1087, name = "??" },
+        { isTraitTree = true, id = 1086, name = "??" },
+        { isTraitTree = true, id = 1084, name = "??" },
+        { isTraitTree = true, id = 1168, name = "Valeera Delve Season 1" },
+    },
     ["The War Within"] = {
         order = increment(),
         { isTraitTree = true, id = LEGION_ARTIFACT_TREE, name = "Legion Remix Artifact Traits" },
