@@ -1,4 +1,4 @@
-## Interface: @toc-version-retail@,@toc-version-midnight@
+## Interface: @toc-version-retail@,@toc-version-midnight@,120000
 ## Title: Research Viewer
 ## Notes: Minimap Button to view your various Research UIs
 ## Author: Numy
