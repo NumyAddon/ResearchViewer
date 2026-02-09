@@ -361,19 +361,24 @@ function ResearchViewer:GetOrderedTreeIDs(list, subItems)
     return list
 end
 
+--- @param tooltip GameTooltip
 function ResearchViewer:AlreadyAdded(textLine, tooltip)
     if textLine == nil then
         return false
     end
 
-    for i = 1,15 do
-        local tooltipFrame = _G[tooltip:GetName() .. "TextLeft" .. i]
-        local textRight = _G[tooltip:GetName().."TextRight"..i]
-        local text, right
-        if tooltipFrame then text = tooltipFrame:GetText() end
-        if text and string.find(text, textLine, 1, true) then return true end
-        if textRight then right = textRight:GetText() end
-        if right and string.find(right, textLine, 1, true) then return true end
+    for i = 1, tooltip:NumLines() do
+        local leftLine = tooltip:GetLeftLine(i)
+        if leftLine then
+            local left = leftLine:GetText()
+            if left and not issecretvalue(left) and string.find(left, textLine, 1, true) then return true end
+        end
+
+        local rightLine = tooltip:GetRightLine(i)
+        if rightLine then
+            local right = rightLine:GetText()
+            if right and not issecretvalue(right) and string.find(right, textLine, 1, true) then return true end
+        end
     end
 end
 
