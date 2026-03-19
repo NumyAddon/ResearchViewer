@@ -27,11 +27,9 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["Midnight"] = {
         order = increment(),
-        { type = 111, id = 499, name = "Loa Blessings" },
-        { isTraitTree = true, id = 1180, name = "??" },
+        { isTraitTree = true, id = 1180, name = "Void Research" },
         { isTraitTree = true, id = 1179, name = "??" },
-        { isTraitTree = true, id = 1177, name = "??" },
-        { isTraitTree = true, id = 1166, name = "??" },
+        { isTraitTree = true, id = 1166, name = "Loa Blessings" },
         { isTraitTree = true, id = 1162, name = "??" },
         { isTraitTree = true, id = 1161, name = "??" },
         { isTraitTree = true, id = 1141, name = "??" },
@@ -39,6 +37,7 @@ ResearchViewer.talentTrees = {
         { isTraitTree = true, id = 1086, name = "??" },
         { isTraitTree = true, id = 1084, name = "??" },
         { isTraitTree = true, id = 1168, name = "Valeera Delve Season 1" },
+        { isTraitTree = true, id = 1177, name = "Brann Delve Pre-patch" },
     },
     ["The War Within"] = {
         order = increment(),
@@ -148,6 +147,10 @@ ResearchViewer.talentTrees = {
     },
 }
 ResearchViewer.neverImplemented = {
+    Midnight = {
+        order = increment(),
+        { type = 111, id = 499, name = "Loa Blessings" },
+    },
     ["The War Within"] = {
         order = increment(),
         { type = 111, id = 498, name = "Earthen Obelisk" },
