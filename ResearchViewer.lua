@@ -208,18 +208,21 @@ f:SetScript("OnEvent", function(_, _, addonName)
     if addonName == "Blizzard_OrderHallUI" then
         ResearchViewer:MakeDropDownButton(OrderHallTalentFrame)
         OrderHallTalentFrame:HookScript("OnHide", function()
+            if ResearchViewer.openingUI then return end
             ResearchViewer.selectedTreeInfo = nil
         end)
     end
     if addonName == "Blizzard_GenericTraitUI" then
         ResearchViewer:MakeDropDownButton(GenericTraitFrame)
         GenericTraitFrame:HookScript("OnHide", function()
+            if ResearchViewer.openingUI then return end
             ResearchViewer.selectedTreeInfo = nil
         end)
     end
     if addonName == "Blizzard_RemixArtifactUI" then
         ResearchViewer:MakeDropDownButton(RemixArtifactFrame)
         RemixArtifactFrame:HookScript("OnHide", function()
+            if ResearchViewer.openingUI then return end
             ResearchViewer.selectedTreeInfo = nil
         end)
     end
@@ -474,32 +477,6 @@ function ResearchViewer:ToggleUI()
 end
 
 function ResearchViewer:OpenGenericTalentTree(treeID)
-    if LEGION_ARTIFACT_TREE == treeID then
-        if PlayerGetTimerunningSeasonID() ~= LEMIX_SEASON then return false; end
-        -- "shift right-click" the MH slot, which opens the correct tree
-        SocketInventoryItem(16);
-        if RemixArtifactFrame:IsShown() then return true; end
-        -- fallback in case the artifact isn't equipped for some reason
-        RemixArtifactUI_LoadUI();
-        RemixArtifactFrame:UpdateLayout();
-
-        local itemID = C_RemixArtifactUI.GetCurrArtifactItemID();
-        if itemID then
-            RemixArtifactFrame:SetArtifactItem(itemID);
-        end
-
-        local configID = C_Traits.GetConfigIDByTreeID(treeID);
-        RemixArtifactFrame:SetConfigID(configID);
-        ShowUIPanel(RemixArtifactFrame);
-        if RemixArtifactFrame:GetNumPoints() == 0 then
-            RemixArtifactFrame:SetPoint('TOPLEFT', 16, -116); -- roughly where it would normally open
-        end
-        if not tIndexOf(UISpecialFrames, 'RemixArtifactFrame') then
-            table.insert(UISpecialFrames, 'RemixArtifactFrame');
-        end
-
-        return true;
-    end
     if not self:TraitTreeExists(treeID) then return false; end
 
     self.charDb.lastSelected = self.selectedTreeInfo
@@ -513,7 +490,9 @@ function ResearchViewer:OpenGenericTalentTree(treeID)
         GenericTraitFrame:SetSystemID(systemID);
     end
     GenericTraitFrame:SetTreeID(treeID);
+    self.openingUI = true;
     ShowUIPanel(GenericTraitFrame);
+    self.openingUI = false;
     if GenericTraitFrame:GetNumPoints() == 0 then
         GenericTraitFrame:SetPoint('TOPLEFT', 16, -116); -- roughly where it would normally open
     end
@@ -525,10 +504,12 @@ function ResearchViewer:OpenGenericTalentTree(treeID)
 end
 
 function ResearchViewer:OpenSelectedResearch()
-    self.charDb.lastSelected = self.selectedTreeInfo
-    OrderHall_LoadUI()
-    OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id)
+    self.charDb.lastSelected = self.selectedTreeInfo;
+    OrderHall_LoadUI();
+    OrderHallTalentFrame:SetGarrisonType(self.selectedTreeInfo.type, self.selectedTreeInfo.id);
+    self.openingUI = true;
     ShowUIPanel(OrderHallTalentFrame);
+    self.openingUI = false;
 end
 
 local treeExistsCache = {}
