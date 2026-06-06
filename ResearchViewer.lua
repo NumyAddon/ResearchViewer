@@ -619,30 +619,31 @@ function ResearchViewer:GenerateMenu(rootDescription, owner)
     self:GenerateSubMenuButtons(rootDescription, self.talentTrees, isSelected, openTree)
     local neverImplementedData = {}
     local neverImplemented = rootDescription:CreateRadio("Never Implemented", isSelected, nil, neverImplementedData)
-    self:GenerateSubMenuButtons(neverImplemented, self.neverImplemented, isSelected, openTree, { neverImplementedData })
+    self:GenerateSubMenuButtons(neverImplemented, self.neverImplemented, isSelected, openTree, { neverImplementedData }, false)
 end
 
 --- @param parentDescription RootMenuDescriptionProxy|ElementMenuDescriptionProxy
 --- @param list table
 --- @param setSelectedFunc fun(data: any)
 --- @param isSelectedFunc fun(data: any): boolean
-function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setSelectedFunc, parentDataTables)
+--- @param displayPreviewTreesSeparate boolean
+function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setSelectedFunc, parentDataTables, displayPreviewTreesSeparate)
     local orderedList = {}
-    local notAvailableList = {}
+    local previewList = displayPreviewTreesSeparate and {} or orderedList
     local orderOffset = #list + 10
     for key, value in pairs(list) do
         if type(key) == "number" then
             local nativeExists = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
-            local offlineExists = value.isTraitTree and self:HasOfflineTreeData(value.id)
-            local treeExists = nativeExists or offlineExists
+            local previewExists = value.isTraitTree and self:HasOfflineTreeData(value.id)
+            local treeExists = nativeExists or previewExists
             local suffix = ''
             if not treeExists then
                 suffix = ' - not available'
-            elseif offlineExists and not nativeExists then
+            elseif previewExists and not nativeExists then
                 suffix = ' - preview'
             end
             table.insert(
-                treeExists and orderedList or notAvailableList,
+                nativeExists and orderedList or previewList,
                 {
                     name = ("%s (%s%d%s)"):format(value.name, (value.isTraitTree and 'T' or 'R'), value.id, suffix),
                     order = key,
@@ -675,12 +676,12 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
             self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setSelectedFunc, dataTables)
         end
     end
-    if next(notAvailableList) then
+    if displayPreviewTreesSeparate and next(previewList) then
         local dataTables = CreateFromMixins(parentDataTables or {})
         local data = {}
         table.insert(dataTables, data)
-        local subParent = parentDescription:CreateRadio("Not Available", isSelectedFunc, nil, data)
-        for _, entry in ipairs(notAvailableList) do
+        local subParent = parentDescription:CreateRadio("Preview", isSelectedFunc, nil, data)
+        for _, entry in ipairs(previewList) do
             subParent:CreateRadio(entry.name, isSelectedFunc, nil, entry.value)
             for _, parentData in ipairs(dataTables) do
                 parentData[(entry.value.isTraitTree and 'T' or 'R') .. entry.value.id] = true

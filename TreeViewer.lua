@@ -10,7 +10,6 @@ local ENTRY_SPACING = 4
 local SELECTOR_PADDING = 6
 local PADDING = 48
 local ID_COLOR = "|cFFEE6161"
-local ID_COLOR_END = "|r"
 local NODE_FRAME_LEVEL = 20
 local MIN_FRAME_WIDTH = 420
 local MIN_FRAME_HEIGHT = 280
@@ -132,6 +131,7 @@ end
 
 function TreeViewer:ShowEntryTooltip(owner, nodeID, entryId, node, treeData)
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    owner.UpdateTooltip = function() self:ShowEntryTooltip(owner, nodeID, entryId, node, treeData) end
 
     local displayInfo = self:GetDisplayInfo(node, treeData, entryId)
     local hasOverrideName = displayInfo.overrideName and displayInfo.overrideName ~= ""
@@ -155,24 +155,14 @@ function TreeViewer:ShowEntryTooltip(owner, nodeID, entryId, node, treeData)
         GameTooltip:AddLine(" ")
     end
 
-    GameTooltip:AddLine(("Node ID: %s%d%s"):format(ID_COLOR, nodeID, ID_COLOR_END), 1, 1, 1)
+    GameTooltip:AddLine((ID_COLOR .. "Node ID|r %d"):format(nodeID))
 
     if entryId then
-        GameTooltip:AddLine(("Entry ID: %s%d%s"):format(ID_COLOR, entryId, ID_COLOR_END), 0.8, 0.8, 0.8)
-        GameTooltip:AddLine(
-            ("Spell ID: %s%s%s"):format(ID_COLOR, displayInfo.spellId or "n/a", ID_COLOR_END),
-            0.8,
-            0.8,
-            0.8
-        )
+        GameTooltip:AddLine((ID_COLOR .. "Entry ID|r %d"):format(entryId))
+        GameTooltip:AddLine((ID_COLOR .. "Spell ID|r %s"):format(displayInfo.spellId or "n/a"))
     else
-        GameTooltip:AddLine(("Entry ID: %sn/a%s"):format(ID_COLOR, ID_COLOR_END), 0.8, 0.8, 0.8)
-        GameTooltip:AddLine(
-            ("Spell ID: %s%s%s"):format(ID_COLOR, displayInfo.spellId or "n/a", ID_COLOR_END),
-            0.8,
-            0.8,
-            0.8
-        )
+        GameTooltip:AddLine(ID_COLOR .. "Entry ID|r n/a")
+        GameTooltip:AddLine((ID_COLOR .. "Spell ID|r %s"):format(displayInfo.spellId or "n/a"))
     end
 
     GameTooltip:Show()
@@ -345,7 +335,7 @@ function TreeViewer:InitFrame()
     frame.title:SetPoint("TOP", 0, -5)
 
     frame.subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    frame.subtitle:SetPoint("TOP", frame.title, "BOTTOM", 0, -5)
+    frame.subtitle:SetPoint("TOP", frame.title, "BOTTOM", 0, -16)
 
     local canvas = CreateFrame("Frame", nil, frame)
     frame.canvas = canvas
