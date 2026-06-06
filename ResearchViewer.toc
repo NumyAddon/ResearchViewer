@@ -24,4 +24,6 @@
 ## Category-zhTW: 資料片特色
 
 libs\load_libs.xml
+data.lua
 ResearchViewer.lua
+TreeViewer.lua

@@ -1,6 +1,8 @@
 local name = ...
+--- @class ResearchViewerNS
+local ns = select(2, ...)
 
-ResearchViewer = {}
+_G.ResearchViewer = {}
 local LibDBIcon = LibStub("LibDBIcon-1.0")
 
 local LEMIX_SEASON = 2
@@ -27,15 +29,11 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["Midnight"] = {
         order = increment(),
+        { isTraitTree = true, id = 1190, name = "Ritual Site Powers" },
+        { isTraitTree = true, id = 1186, name = RUNES_OF_POWER or "Omnium Folio" },
+        { isTraitTree = true, id = 1185, name = "Ritual Site Affixes" },
         { isTraitTree = true, id = 1180, name = "Void Research" },
-        { isTraitTree = true, id = 1179, name = "??" },
         { isTraitTree = true, id = 1166, name = "Loa Blessings" },
-        { isTraitTree = true, id = 1162, name = "??" },
-        { isTraitTree = true, id = 1161, name = "??" },
-        { isTraitTree = true, id = 1141, name = "??" },
-        { isTraitTree = true, id = 1087, name = "??" },
-        { isTraitTree = true, id = 1086, name = "??" },
-        { isTraitTree = true, id = 1084, name = "??" },
         { isTraitTree = true, id = 1168, name = "Valeera Delve Season 1" },
         { isTraitTree = true, id = 1177, name = "Brann Delve Pre-patch" },
     },
@@ -52,12 +50,6 @@ ResearchViewer.talentTrees = {
         { isTraitTree = true, id = 1046, name = GENERIC_TRAIT_FRAME_THE_VIZIER_TITLE },
         { isTraitTree = true, id = 1045, name = GENERIC_TRAIT_FRAME_THE_GENERAL_TITLE },
         { isTraitTree = true, id = 1042, name = GENERIC_TRAIT_FRAME_THE_WEAVER_TITLE },
-        { isTraitTree = true, id = 1054, name = "??" },
-        { isTraitTree = true, id = 898, name = "??" },
-        { isTraitTree = true, id = 876, name = "??" },
-        { isTraitTree = true, id = 875, name = "??" },
-        { isTraitTree = true, id = 775, name = "??" },
-        { isTraitTree = true, id = 751, name = "??" },
         { isTraitTree = true, id = 874, name = "Brann Delve Season 1" },
     },
     Dragonflight = {
@@ -149,10 +141,22 @@ ResearchViewer.talentTrees = {
 ResearchViewer.neverImplemented = {
     Midnight = {
         order = increment(),
+        { isTraitTree = true, id = 1179, name = "Loa Blessings" },
         { type = 111, id = 499, name = "Loa Blessings" },
     },
     ["The War Within"] = {
         order = increment(),
+        { isTraitTree = true, id = 1162, name = "Legion Remix" },
+        { isTraitTree = true, id = 1141, name = "Legion Remix" },
+        { isTraitTree = true, id = 1086, name = "Legion Remix - Fury Warrior" },
+        { isTraitTree = true, id = 1084, name = "Legion Remix - Arms Warrior" },
+        { isTraitTree = true, id = 1087, name = "Legion Remix - Prot Warrior" },
+        { isTraitTree = true, id = 1054, name = "Delve stuff - possibly a test copy/paste of S1" },
+        { isTraitTree = true, id = 898, name = "Hero Talents - UI Engineering test" },
+        { isTraitTree = true, id = 876, name = "Follower dungeon - group picker" },
+        { isTraitTree = true, id = 875, name = "Cariel" },
+        { isTraitTree = true, id = 775, name = "??" },
+        { isTraitTree = true, id = 751, name = "??" },
         { type = 111, id = 498, name = "Earthen Obelisk" },
         { type = 111, id = 495, name = "Rexxar's Ability" },
         { type = 111, id = 496, name = "Awakening The Machine" },
@@ -388,7 +392,7 @@ function ResearchViewer:AlreadyAdded(textLine, tooltip)
     end
 end
 
---- @param parent GenericTraitFrame|OrderHallTalentFrame|RemixArtifactFrame
+--- @param parent GenericTraitFrame|OrderHallTalentFrame|RemixArtifactFrame|ResearchViewerTreeFrame
 function ResearchViewer:MakeDropDownButton(parent)
     local dropdown = CreateFrame("DropdownButton", nil, parent, "WowStyle1DropdownTemplate");
 
@@ -457,7 +461,9 @@ function ResearchViewer:ToggleUI()
         end
     end
     if self.selectedTreeInfo.isTraitTree then
-        if RemixArtifactFrame and RemixArtifactFrame:IsShown() and self.selectedTreeInfo.id == LEGION_ARTIFACT_TREE then
+        if ResearchViewerTreeFrame and ResearchViewerTreeFrame:IsShown() then
+            ns.TreeViewer:Hide()
+        elseif RemixArtifactFrame and RemixArtifactFrame:IsShown() and self.selectedTreeInfo.id == LEGION_ARTIFACT_TREE then
             HideUIPanel(RemixArtifactFrame)
         elseif GenericTraitFrame and GenericTraitFrame:IsShown() then
             HideUIPanel(GenericTraitFrame)
@@ -477,30 +483,41 @@ function ResearchViewer:ToggleUI()
 end
 
 function ResearchViewer:OpenGenericTalentTree(treeID)
-    if not self:TraitTreeExists(treeID) then return false; end
+    if self:TraitTreeExists(treeID) then
+        self.charDb.lastSelected = self.selectedTreeInfo
+        local systemID = C_Traits.GetSystemIDByTreeID(treeID)
 
-    self.charDb.lastSelected = self.selectedTreeInfo
-    local systemID = C_Traits.GetSystemIDByTreeID(treeID)
+        GenericTraitUI_LoadUI();
+        GenericTraitFrame:Hide();
+        if GenericTraitFrame.SetConfigIDBySystemID then
+            GenericTraitFrame:SetConfigIDBySystemID(systemID);
+        else
+            GenericTraitFrame:SetSystemID(systemID);
+        end
+        GenericTraitFrame:SetTreeID(treeID);
+        self.openingUI = true;
+        ShowUIPanel(GenericTraitFrame);
+        self.openingUI = false;
+        if GenericTraitFrame:GetNumPoints() == 0 then
+            GenericTraitFrame:SetPoint('TOPLEFT', 16, -116); -- roughly where it would normally open
+        end
+        if not tIndexOf(UISpecialFrames, 'GenericTraitFrame') then
+            table.insert(UISpecialFrames, 'GenericTraitFrame');
+        end
 
-    GenericTraitUI_LoadUI();
-    GenericTraitFrame:Hide();
-    if GenericTraitFrame.SetConfigIDBySystemID then
-        GenericTraitFrame:SetConfigIDBySystemID(systemID);
-    else
-        GenericTraitFrame:SetSystemID(systemID);
-    end
-    GenericTraitFrame:SetTreeID(treeID);
-    self.openingUI = true;
-    ShowUIPanel(GenericTraitFrame);
-    self.openingUI = false;
-    if GenericTraitFrame:GetNumPoints() == 0 then
-        GenericTraitFrame:SetPoint('TOPLEFT', 16, -116); -- roughly where it would normally open
-    end
-    if not tIndexOf(UISpecialFrames, 'GenericTraitFrame') then
-        table.insert(UISpecialFrames, 'GenericTraitFrame');
+        return true
     end
 
-    return true;
+    if self:HasOfflineTreeData(treeID) then
+        self.charDb.lastSelected = self.selectedTreeInfo;
+        HideUIPanel(GenericTraitFrame);
+        HideUIPanel(RemixArtifactFrame);
+        ns.TreeViewer:Toggle(treeID, self.selectedTreeInfo and self.selectedTreeInfo.name);
+
+        return true;
+    end
+
+    return false;
 end
 
 function ResearchViewer:OpenSelectedResearch()
@@ -533,15 +550,24 @@ function ResearchViewer:TraitTreeExists(treeID)
     return not not C_Traits.GetConfigIDByTreeID(treeID)
 end
 
+function ResearchViewer:HasOfflineTreeData(treeID)
+    return not not ns.data.trees[treeID]
+end
+
 --- @param rootDescription RootMenuDescriptionProxy
---- @param owner GenericTraitFrame|OrderHallTalentFrame
+--- @param owner GenericTraitFrame|OrderHallTalentFrame|RemixArtifactFrame|ResearchViewerTreeFrame
 function ResearchViewer:GenerateMenu(rootDescription, owner)
     if not self.orderedTreeIDs then
         self.orderedTreeIDs = self:GetOrderedTreeIDs()
         self.orderedTreeIDsMap = tInvert(self.orderedTreeIDs)
     end
     local function openTree(data)
-        HideUIPanel(owner)
+        if owner ~= ResearchViewerTreeFrame then
+            HideUIPanel(owner)
+        end
+        if ResearchViewerTreeFrame and ResearchViewerTreeFrame:IsShown() then
+            ns.TreeViewer:Hide()
+        end
 
         self.selectedTreeInfo = data
         if data.isTraitTree then
@@ -565,6 +591,12 @@ function ResearchViewer:GenerateMenu(rootDescription, owner)
                 or (
                     data.id == self.selectedTreeInfo.id
                     and (data.type == self.selectedTreeInfo.type or data.isTraitTree == self.selectedTreeInfo.isTraitTree)
+                )
+        elseif owner == ResearchViewerTreeFrame and ns.TreeViewer.currentTreeID then
+            return
+                data.isTraitTree and data.id == ns.TreeViewer.currentTreeID
+                or (
+                    data['T' .. ns.TreeViewer.currentTreeID]
                 )
         elseif owner == GenericTraitFrame and GenericTraitFrame:GetTalentTreeID() then
             return
@@ -600,11 +632,19 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
     local orderOffset = #list + 10
     for key, value in pairs(list) do
         if type(key) == "number" then
-            local treeExists = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
+            local nativeExists = (value.isTraitTree and self:TraitTreeExists(value.id)) or (not value.isTraitTree and self:TreeExists(value.id))
+            local offlineExists = value.isTraitTree and self:HasOfflineTreeData(value.id)
+            local treeExists = nativeExists or offlineExists
+            local suffix = ''
+            if not treeExists then
+                suffix = ' - not available'
+            elseif offlineExists and not nativeExists then
+                suffix = ' - preview'
+            end
             table.insert(
                 treeExists and orderedList or notAvailableList,
                 {
-                    name = ("%s (%s%d%s)"):format(value.name, (value.isTraitTree and 'T' or 'R'), value.id, (treeExists and '' or ' - not available')),
+                    name = ("%s (%s%d%s)"):format(value.name, (value.isTraitTree and 'T' or 'R'), value.id, suffix),
                     order = key,
                     value = value,
                     isTree = true,
