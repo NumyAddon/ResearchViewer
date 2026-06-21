@@ -144,7 +144,7 @@ function TreeViewer:ShowEntryTooltip(owner, nodeID, entryId, node, treeData)
         GameTooltip:AddLine(displayInfo.overrideDescription, nil, nil, nil, true)
     end
     if not hasOverrideName and not hasOverrideDescription and displayInfo.spellId then
-        if GetSpellInfo(displayInfo.spellId) then
+        if C_Spell.GetSpellInfo(displayInfo.spellId) then
             GameTooltip:SetSpellByID(displayInfo.spellId)
         else
             GameTooltip:AddLine("Unknown Spell")

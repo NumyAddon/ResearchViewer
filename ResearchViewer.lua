@@ -29,7 +29,9 @@ local increment = CreateCounter();
 ResearchViewer.talentTrees = {
     ["Midnight"] = {
         order = increment(),
-        { isTraitTree = true, id = 1190, name = "Ritual Site Powers" },
+        { isTraitTree = true, id = 1223, name = "Valeera Delve Season 2" },
+        { isTraitTree = true, id = 1192, name = "Valeera Delve Season 2" },
+        { isTraitTree = true, id = 1191, name = "Altar of Corrosion" },
         { isTraitTree = true, id = 1186, name = RUNES_OF_POWER or "Omnium Folio" },
         { isTraitTree = true, id = 1185, name = "Ritual Site Affixes" },
         { isTraitTree = true, id = 1180, name = "Void Research" },
@@ -141,6 +143,7 @@ ResearchViewer.talentTrees = {
 ResearchViewer.neverImplemented = {
     Midnight = {
         order = increment(),
+        { isTraitTree = true, id = 1190, name = "Ritual Site Powers" },
         { isTraitTree = true, id = 1179, name = "Loa Blessings" },
         { type = 111, id = 499, name = "Loa Blessings" },
     },
@@ -616,7 +619,7 @@ function ResearchViewer:GenerateMenu(rootDescription, owner)
     end
 
     rootDescription:CreateTitle('Select another tree')
-    self:GenerateSubMenuButtons(rootDescription, self.talentTrees, isSelected, openTree)
+    self:GenerateSubMenuButtons(rootDescription, self.talentTrees, isSelected, openTree, nil, true)
     local neverImplementedData = {}
     local neverImplemented = rootDescription:CreateRadio("Never Implemented", isSelected, nil, neverImplementedData)
     self:GenerateSubMenuButtons(neverImplemented, self.neverImplemented, isSelected, openTree, { neverImplementedData }, false)
@@ -626,7 +629,7 @@ end
 --- @param list table
 --- @param setSelectedFunc fun(data: any)
 --- @param isSelectedFunc fun(data: any): boolean
---- @param displayPreviewTreesSeparate boolean
+--- @param displayPreviewTreesSeparate ?boolean
 function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setSelectedFunc, parentDataTables, displayPreviewTreesSeparate)
     local orderedList = {}
     local previewList = displayPreviewTreesSeparate and {} or orderedList
@@ -673,7 +676,7 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
         if not entry.isTree then
             local dataTables = CreateFromMixins(parentDataTables or {})
             table.insert(dataTables, data)
-            self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setSelectedFunc, dataTables)
+            self:GenerateSubMenuButtons(subMenuButton, entry.value, isSelectedFunc, setSelectedFunc, dataTables, displayPreviewTreesSeparate)
         end
     end
     if displayPreviewTreesSeparate and next(previewList) then
@@ -682,7 +685,7 @@ function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelect
         table.insert(dataTables, data)
         local subParent = parentDescription:CreateRadio("Preview", isSelectedFunc, nil, data)
         for _, entry in ipairs(previewList) do
-            subParent:CreateRadio(entry.name, isSelectedFunc, nil, entry.value)
+            subParent:CreateRadio(entry.name, isSelectedFunc, setSelectedFunc, entry.value)
             for _, parentData in ipairs(dataTables) do
                 parentData[(entry.value.isTraitTree and 'T' or 'R') .. entry.value.id] = true
             end
