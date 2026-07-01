@@ -629,7 +629,7 @@ end
 --- @param list table
 --- @param setSelectedFunc fun(data: any)
 --- @param isSelectedFunc fun(data: any): boolean
---- @param displayPreviewTreesSeparate ?boolean
+--- @param displayPreviewTreesSeparate boolean?
 function ResearchViewer:GenerateSubMenuButtons(parentDescription, list, isSelectedFunc, setSelectedFunc, parentDataTables, displayPreviewTreesSeparate)
     local orderedList = {}
     local previewList = displayPreviewTreesSeparate and {} or orderedList
